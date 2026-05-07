@@ -25,7 +25,7 @@ through the same parsing and validation path used
 during startup, including filter pipeline construction
 and ordering checks.
 
-```sh
+```console
 praxis --validate --config praxis.yaml
 praxis -t -c praxis.yaml
 ```
