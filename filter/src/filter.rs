@@ -7,6 +7,7 @@
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use praxis_core::config::InsecureOptions;
 
 pub(crate) use crate::context::HttpFilterContext;
 use crate::{
@@ -110,6 +111,14 @@ pub trait HttpFilter: Send + Sync {
     fn needs_request_context(&self) -> bool {
         false
     }
+
+    /// Apply global [`InsecureOptions`] to this filter.
+    ///
+    /// Filters that support insecure overrides (e.g. CSRF
+    /// log-only mode) override this. Default: no-op.
+    ///
+    /// [`InsecureOptions`]: praxis_core::config::InsecureOptions
+    fn apply_insecure_options(&self, _options: &InsecureOptions) {}
 
     /// Returns the compression configuration if this filter enables
     /// response compression. Only `CompressionFilter` overrides

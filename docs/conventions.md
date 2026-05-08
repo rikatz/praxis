@@ -91,6 +91,13 @@ and verify conformance against them.
 
 - Cite the specific RFC number and section in test names
   or doc comments for protocol conformance tests.
+- RFC references in doc comments must use reference-style
+  rustdoc links to the IETF datatracker:
+  ```rust
+  /// Safe methods per [RFC 9110 Section 9.2.1].
+  ///
+  /// [RFC 9110 Section 9.2.1]: https://datatracker.ietf.org/doc/html/rfc9110#section-9.2.1
+  ```
 - When in doubt about an edge case, the RFC is the
   authority, not other proxy implementations.
 - Add dedicated conformance tests when implementing

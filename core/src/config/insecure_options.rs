@@ -29,6 +29,7 @@ use serde::Deserialize;
 /// assert!(!opts.allow_root);
 /// assert!(!opts.allow_tls_without_sni);
 /// assert!(!opts.allow_unbounded_body);
+/// assert!(!opts.csrf_log_only);
 /// assert!(!opts.skip_pipeline_validation);
 /// ```
 ///
@@ -63,6 +64,10 @@ pub struct InsecureOptions {
 
     /// Allow stream-buffered body mode with no size limit.
     pub allow_unbounded_body: bool,
+
+    /// Run the CSRF filter in log-only mode: evaluate all rules
+    /// but log violations as warnings instead of rejecting requests.
+    pub csrf_log_only: bool,
 
     /// Skip pipeline ordering validation.
     pub skip_pipeline_validation: bool,
@@ -105,6 +110,7 @@ mod tests {
             !opts.allow_unbounded_body,
             "allow_unbounded_body should default to false"
         );
+        assert!(!opts.csrf_log_only, "csrf_log_only should default to false");
         assert!(
             !opts.skip_pipeline_validation,
             "skip_pipeline_validation should default to false"

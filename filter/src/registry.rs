@@ -109,7 +109,7 @@ impl FilterRegistry {
 #[allow(clippy::too_many_lines, reason = "one line per filter, will grow")]
 fn register_http_builtins(factories: &mut HashMap<String, FilterFactory>) {
     use crate::builtins::{
-        AccessLogFilter, CircuitBreakerFilter, CompressionFilter, CorsFilter, CredentialInjectionFilter,
+        AccessLogFilter, CircuitBreakerFilter, CompressionFilter, CorsFilter, CredentialInjectionFilter, CsrfFilter,
         ForwardedHeadersFilter, HeaderFilter, IpAclFilter, JsonBodyFieldFilter, JsonRpcFilter, PathRewriteFilter,
         RateLimitFilter, RedirectFilter, RequestIdFilter, StaticResponseFilter, TimeoutFilter, UrlRewriteFilter,
     };
@@ -118,6 +118,7 @@ fn register_http_builtins(factories: &mut HashMap<String, FilterFactory>) {
     register_http(factories, "circuit_breaker", CircuitBreakerFilter::from_config);
     register_http(factories, "compression", CompressionFilter::from_config);
     register_http(factories, "cors", CorsFilter::from_config);
+    register_http(factories, "csrf", CsrfFilter::from_config);
     register_http(
         factories,
         "credential_injection",
@@ -212,6 +213,7 @@ mod tests {
         );
         assert!(names.contains(&"compression"), "compression should be registered");
         assert!(names.contains(&"cors"), "cors should be registered");
+        assert!(names.contains(&"csrf"), "csrf should be registered");
         assert!(
             names.contains(&"credential_injection"),
             "credential_injection should be registered"

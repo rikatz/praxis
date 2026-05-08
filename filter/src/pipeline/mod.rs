@@ -31,7 +31,11 @@ mod tcp;
 )]
 mod tests;
 
-use praxis_core::{config::FailureMode, health::HealthRegistry, kv::KvStoreRegistry};
+use praxis_core::{
+    config::{FailureMode, InsecureOptions},
+    health::HealthRegistry,
+    kv::KvStoreRegistry,
+};
 use tracing::warn;
 
 use self::filter::PipelineFilter;
@@ -154,6 +158,22 @@ impl FilterPipeline {
     /// Set the shared [`KvStoreRegistry`] for this pipeline.
     pub fn set_kv_stores(&mut self, stores: KvStoreRegistry) {
         self.kv_stores = Some(stores);
+    }
+
+    /// Apply [`InsecureOptions`] to all filters in the pipeline.
+    ///
+    /// Delegates to each filter's [`apply_insecure_options`] method.
+    /// Filters that support insecure overrides (e.g. CSRF log-only
+    /// mode) handle the relevant flags; others ignore the call.
+    ///
+    /// [`apply_insecure_options`]: crate::HttpFilter::apply_insecure_options
+    /// [`InsecureOptions`]: praxis_core::config::InsecureOptions
+    pub fn apply_insecure_options(&self, options: &InsecureOptions) {
+        for pf in &self.filters {
+            if let crate::any_filter::AnyFilter::Http(f) = &pf.filter {
+                f.apply_insecure_options(options);
+            }
+        }
     }
 }
 

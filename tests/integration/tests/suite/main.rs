@@ -40,6 +40,7 @@ mod body_pipeline;
 mod compression;
 mod conditions;
 mod cors;
+mod csrf;
 mod downstream_read_timeout;
 mod examples;
 mod failure_mode;

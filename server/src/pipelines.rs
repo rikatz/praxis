@@ -60,6 +60,8 @@ pub fn resolve_pipelines(
             pipeline.set_kv_stores(kv_stores.clone());
         }
 
+        pipeline.apply_insecure_options(&config.insecure_options);
+
         let skip = config.insecure_options.skip_pipeline_validation;
         let allow_open_security = config.insecure_options.allow_open_security_filters;
         validate_pipeline(&pipeline, &entries, &listener.name, skip, allow_open_security)?;

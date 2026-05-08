@@ -56,6 +56,7 @@ page.
 
 | File | Description |
 | ------ | ------------- |
+| [csrf.yaml](configs/security/csrf.yaml) | CSRF protection via origin validation |
 | [forwarded-headers.yaml](configs/security/forwarded-headers.yaml) | X-Forwarded-For/Proto/Host with trusted proxies |
 | [guardrails.yaml](configs/security/guardrails.yaml) | Reject requests matching header or body string/regex rules |
 | [ip-acl.yaml](configs/security/ip-acl.yaml) | Allow/deny by source IP/CIDR |

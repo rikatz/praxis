@@ -7,7 +7,7 @@ pub(crate) mod http;
 mod tcp;
 
 pub use http::{
-    AccessLogFilter, CircuitBreakerFilter, CompressionFilter, CorsFilter, CredentialInjectionFilter,
+    AccessLogFilter, CircuitBreakerFilter, CompressionFilter, CorsFilter, CredentialInjectionFilter, CsrfFilter,
     ForwardedHeadersFilter, GuardrailsAction, GuardrailsFilter, HeaderFilter, IpAclFilter, JsonBodyFieldFilter,
     JsonRpcFilter, LoadBalancerFilter, ModelToHeaderFilter, PathRewriteFilter, RateLimitFilter, RedirectFilter,
     RequestIdFilter, RouterFilter, StaticResponseFilter, TimeoutFilter, UrlRewriteFilter, normalize_rewritten_path,

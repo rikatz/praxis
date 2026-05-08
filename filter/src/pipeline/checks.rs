@@ -13,7 +13,7 @@ use super::filter::PipelineFilter;
 // -----------------------------------------------------------------------------
 
 /// Filters classified as security-critical (bypass risk when conditional).
-const SECURITY_FILTERS: &[&str] = &["ip_acl", "forwarded_headers"];
+const SECURITY_FILTERS: &[&str] = &["csrf", "ip_acl", "forwarded_headers"];
 
 /// Filters that rewrite the request path.
 const REWRITE_FILTERS: &[&str] = &["path_rewrite", "url_rewrite"];

@@ -15,6 +15,7 @@ mod canary_routing;
 mod circuit_breaker;
 mod conditional_filters;
 mod credential_injection;
+mod csrf;
 mod default_config;
 mod header_manipulation;
 mod health_checks;
