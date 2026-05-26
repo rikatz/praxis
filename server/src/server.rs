@@ -61,7 +61,9 @@ pub fn resolve_config_path(explicit: Option<&str>) -> Option<PathBuf> {
 /// Config is owned for the server's lifetime (never returns).
 #[allow(clippy::needless_pass_by_value, reason = "server owns config")]
 pub fn run_server(config: Config, config_path: Option<PathBuf>) -> ! {
-    run_server_with_registry(config, FilterRegistry::with_builtins(), config_path)
+    let mut registry = FilterRegistry::with_builtins();
+    register_dynamic_modules(&mut registry);
+    run_server_with_registry(config, registry, config_path)
 }
 
 /// Build filter pipelines from the given registry, register protocols and run the server.
@@ -105,6 +107,21 @@ pub fn run_server_with_registry(config: Config, registry: FilterRegistry, config
     info!("starting server");
     server.run()
 }
+
+/// Register the Envoy dynamic module filter factory, if compiled in.
+#[cfg(feature = "dynamic-modules")]
+pub fn register_dynamic_modules(registry: &mut FilterRegistry) {
+    registry
+        .register(
+            "envoy_dynamic_module",
+            praxis_filter::FilterFactory::Http(Arc::new(praxis_dynamic_modules::EnvoyDynamicModuleFilter::from_config)),
+        )
+        .unwrap_or_else(|e| fatal(&e));
+}
+
+/// No-op when the `dynamic-modules` feature is not enabled.
+#[cfg(not(feature = "dynamic-modules"))]
+pub fn register_dynamic_modules(_registry: &mut FilterRegistry) {}
 
 /// Register HTTP and TCP protocol handlers with the Pingora server.
 fn register_protocols(

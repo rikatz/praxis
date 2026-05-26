@@ -25,6 +25,7 @@ workspace = true
 clap = { workspace = true }
 notify = { workspace = true }
 praxis-core = { workspace = true }
+praxis-dynamic-modules = { workspace = true, optional = true }
 praxis-filter = { workspace = true }
 praxis-protocol = { workspace = true }
 serde = { workspace = true }
@@ -43,5 +44,6 @@ tempfile = { workspace = true }
 [features]
 default = ["ai-inference"]
 ai-inference = ["praxis-filter/ai-inference"]
+dynamic-modules = ["dep:praxis-dynamic-modules"]
 ext-proc = ["praxis-filter/ext-proc"]
 

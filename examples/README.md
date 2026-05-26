@@ -138,6 +138,12 @@ page.
 | [reentrance.yaml](configs/branching/reentrance.yaml) | Loop back to a named filter with max_iterations cap |
 | [cross-chain-flat.yaml](configs/branching/cross-chain-flat.yaml) | Branch across concatenated chains via flat pipeline name index |
 
+### Dynamic Modules
+
+| File | Description |
+| ------ | ------------- |
+| [envoy-dynamic-module.yaml](configs/dynamic-modules/envoy-dynamic-module.yaml) | jwe-decrypt Go plugin via Envoy dynamic module ABI (requires `--features dynamic-modules`; see [build instructions](dynamic-modules/jwe-decrypt/README.md)) |
+
 ### Operations
 
 | File | Description |

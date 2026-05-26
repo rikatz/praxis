@@ -1,0 +1,59 @@
+# Envoy Dynamic Module — jwe-decrypt
+#
+# Load the jwe-decrypt Go plugin as a Praxis HTTP filter via the Envoy
+# dynamic module C ABI. The plugin decrypts JWE tokens from the
+# Authorization header and writes the inner JWT to X-Decrypted-Jwt.
+#
+# See examples/dynamic-modules/jwe-decrypt/README.md for build
+# instructions (Go wrapper + shared library compilation).
+#
+# Requires: cargo build -p praxis --features dynamic-modules
+#
+# Usage:
+#   cargo run -p praxis --features dynamic-modules -- \
+#     -c examples/configs/dynamic-modules/envoy-dynamic-module.yaml
+#
+# Exercise:
+#   # Send a request with a JWE token:
+#   curl -v -H "Authorization: Bearer <JWE_TOKEN>" \
+#     http://localhost:8080/
+#
+#   # The decrypted JWT appears in X-Decrypted-Jwt.
+#
+# Fields:
+#   module_path   - Filesystem path to the .so file
+#   module_name   - Name the SDK uses to look up the filter factory
+#   module_config - JSON config forwarded to the module's config_new;
+#                   see the jwe-decrypt config schema for valid fields
+
+listeners:
+  - name: default
+    address: "127.0.0.1:8080"
+    filter_chains:
+      - main
+
+filter_chains:
+  - name: main
+    filters:
+      - filter: envoy_dynamic_module
+        module_path: ./examples/dynamic-modules/jwe-decrypt/jwe-decrypt.so
+        module_name: jwe-decrypt
+        module_config: >-
+          {
+            "private_key": {"file": "./private.pem"},
+            "algorithm": "RSA-OAEP",
+            "input_header": "Authorization",
+            "prefix": "Bearer ",
+            "output_header": "X-Decrypted-Jwt"
+          }
+
+      - filter: router
+        routes:
+          - path_prefix: "/"
+            cluster: backend
+
+      - filter: load_balancer
+        clusters:
+          - name: backend
+            endpoints:
+              - "127.0.0.1:3000"

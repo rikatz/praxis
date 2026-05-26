@@ -11,4 +11,6 @@ mod server;
 pub(crate) mod watcher;
 pub use pipelines::resolve_pipelines;
 pub use praxis_core::{config::load_config, logging::init_tracing};
-pub use server::{check_root_privilege, fatal, resolve_config_path, run_server, run_server_with_registry};
+pub use server::{
+    check_root_privilege, fatal, register_dynamic_modules, resolve_config_path, run_server, run_server_with_registry,
+};

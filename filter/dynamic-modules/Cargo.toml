@@ -1,0 +1,29 @@
+[package]
+name = "praxis-proxy-dynamic-modules"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Envoy dynamic module bridge for the Praxis proxy"
+
+[features]
+regenerate-abi = ["dep:bindgen"]
+
+[dependencies]
+async-trait = { workspace = true }
+bytes = { workspace = true }
+http = { workspace = true }
+libloading = "0.8"
+praxis-filter = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[build-dependencies]
+bindgen = { version = "0.71", optional = true }
+
+[lints]
+workspace = true
