@@ -3195,6 +3195,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "praxis-proxy-config-catalog"
+version = "0.5.4"
+dependencies = [
+ "semver",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "praxis-proxy-config-catalog-generator"
+version = "0.5.4"
+dependencies = [
+ "praxis-proxy-config-catalog",
+ "quote",
+ "serde_json",
+ "syn 3.0.4",
+]
+
+[[package]]
 name = "praxis-proxy-core"
 version = "0.5.4"
 dependencies = [
@@ -5726,7 +5745,10 @@ dependencies = [
  "nix",
  "plotters",
  "praxis-proxy",
+ "praxis-proxy-config-catalog",
+ "praxis-proxy-config-catalog-generator",
  "praxis-proxy-core",
+ "praxis-proxy-filter",
  "quote",
  "serde_json",
  "syn 3.0.4",
