@@ -49,7 +49,8 @@ pub(super) const MAX_REGEX_PATTERN_LEN: usize = 1024;
 ///
 /// [`Literal`]: ContainsValue::Literal
 /// [`Pii`]: ContainsValue::Pii
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.guardrails.contains")]
 #[serde(untagged)]
 pub enum ContainsValue {
     /// Literal substring match (case-insensitive).
@@ -93,7 +94,8 @@ impl ContainsValue {
 /// let flag: GuardrailsAction = serde_yaml::from_str("flag").unwrap();
 /// assert!(matches!(flag, GuardrailsAction::Flag));
 /// ```
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.guardrails.action")]
 #[serde(rename_all = "lowercase")]
 pub enum GuardrailsAction {
     /// Reject the request immediately with 403 (default).
@@ -124,7 +126,8 @@ pub enum GuardrailsAction {
 /// let target: RuleTargetKind = serde_yaml::from_str("body").unwrap();
 /// assert!(matches!(target, RuleTargetKind::Body));
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.guardrails.target")]
 #[serde(rename_all = "snake_case")]
 pub enum RuleTargetKind {
     /// Inspect a named request header.
@@ -139,9 +142,10 @@ pub enum RuleTargetKind {
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for a single guardrail rule.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.guardrails.rule")]
 #[serde(deny_unknown_fields)]
-pub(super) struct RuleConfig {
+pub(crate) struct RuleConfig {
     /// Header name (required when `target` is [`Header`]).
     ///
     /// [`Header`]: RuleTargetKind::Header
@@ -168,9 +172,10 @@ pub(super) struct RuleConfig {
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the guardrails filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.guardrails")]
 #[serde(deny_unknown_fields)]
-pub(super) struct GuardrailsConfig {
+pub(crate) struct GuardrailsConfig {
     /// What to do when a rule matches (default: reject).
     #[serde(default)]
     pub action: GuardrailsAction,

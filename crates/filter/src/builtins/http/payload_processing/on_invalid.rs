@@ -13,7 +13,8 @@ use serde::Deserialize;
 ///
 /// Used by classifier filters (e.g. JSON-RPC) to control what happens
 /// when parsing fails.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.on_invalid_behavior")]
 #[serde(rename_all = "snake_case")]
 pub enum OnInvalidBehavior {
     /// Continue processing without classifier metadata.

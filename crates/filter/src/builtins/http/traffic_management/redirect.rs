@@ -71,14 +71,35 @@ impl TryFrom<u16> for RedirectStatus {
     }
 }
 
+impl praxis_config_catalog::ConfigSchemaFor for RedirectStatus {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.redirect_status")
+    }
+
+    fn register(
+        _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Enum {
+            values: vec![
+                serde_json::Value::Number(301.into()),
+                serde_json::Value::Number(302.into()),
+                serde_json::Value::Number(307.into()),
+                serde_json::Value::Number(308.into()),
+            ],
+        })
+    }
+}
+
 // -----------------------------------------------------------------------------
 // RedirectConfig
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the redirect filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.redirect")]
 #[serde(deny_unknown_fields)]
-struct RedirectConfig {
+pub(crate) struct RedirectConfig {
     /// Optional allowlist of permitted hostnames for `${host}` substitution.
     ///
     /// Supports exact matches and wildcard prefixes (`*.example.com`).

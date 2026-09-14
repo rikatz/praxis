@@ -26,9 +26,10 @@ pub(super) const MAX_JSON_ALIAS_BODY_BYTES: usize = 67_108_864; // 64 MiB
 // -----------------------------------------------------------------------------
 
 /// Deserialization wrapper for the router's YAML config.
-#[derive(Deserialize)]
+#[derive(Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.router")]
 #[serde(deny_unknown_fields)]
-pub(super) struct RouterConfig {
+pub(crate) struct RouterConfig {
     /// Reserved for the unimplemented JSON alias feature; has no effect.
     ///
     /// Kept so existing configs continue to parse. Any route that
@@ -45,7 +46,7 @@ pub(super) struct RouterConfig {
 
     /// Route table entries.
     #[serde(default)]
-    pub routes: Vec<RouterRouteConfig>,
+    pub(super) routes: Vec<RouterRouteConfig>,
 
     /// Enable multi-level subdomain matching for wildcard hosts.
     ///
@@ -81,6 +82,19 @@ pub(super) struct RouterRouteConfig {
     pub json_aliases: Option<Vec<JsonAlias>>,
 }
 
+impl praxis_config_catalog::ConfigSchemaFor for RouterRouteConfig {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.router.route")
+    }
+
+    fn register(
+        schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        <RouterRouteConfigRaw as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting)
+    }
+}
+
 impl From<Route> for RouterRouteConfig {
     fn from(route: Route) -> Self {
         Self {
@@ -91,7 +105,8 @@ impl From<Route> for RouterRouteConfig {
 }
 
 /// Raw deserialization target for [`RouterRouteConfig`].
-#[derive(Deserialize)]
+#[derive(Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.router.route_raw")]
 #[serde(deny_unknown_fields)]
 struct RouterRouteConfigRaw {
     /// Exact path to match. Exactly one of `path` or `path_prefix`
@@ -150,7 +165,8 @@ impl TryFrom<RouterRouteConfigRaw> for RouterRouteConfig {
 /// [`reject_unimplemented_json_aliases`].
 ///
 /// [`reject_unimplemented_json_aliases`]: super::reject_unimplemented_json_aliases
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.router.json_alias")]
 #[serde(deny_unknown_fields)]
 pub(super) struct JsonAlias {
     /// Request JSON field whose string value is compared with `pattern`.

@@ -52,9 +52,10 @@ const QUERY_VALUE_ENCODE_SET: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'#'
 /// let filter = UrlRewriteFilter::from_config(&cfg).unwrap();
 /// assert_eq!(filter.name(), "url_rewrite");
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.transformation.url_rewrite")]
 #[serde(deny_unknown_fields)]
-struct UrlRewriteConfig {
+pub(crate) struct UrlRewriteConfig {
     /// Ordered list of rewrite operations to apply.
     #[serde(default)]
     operations: Vec<OperationConfig>,
@@ -93,6 +94,61 @@ struct OperationConfig {
     /// Append query parameters.
     #[serde(default)]
     add_query_params: Option<serde_yaml::Value>,
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for OperationConfig {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.url_rewrite.operation")
+    }
+
+    fn register(
+        _schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        use praxis_config_catalog::{ObjectField, SchemaNode};
+        let mut string = || <String as praxis_config_catalog::ConfigSchemaFor>::register(_schemas, _visiting);
+        let regex_replace = SchemaNode::object(vec![
+            ObjectField {
+                serialized_name: "pattern".into(),
+                aliases: vec![],
+                schema: string(),
+                required: true,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "replacement".into(),
+                aliases: vec![],
+                schema: string(),
+                required: true,
+                flattened: false,
+            },
+        ]);
+        let strip_query_params = SchemaNode::array(string());
+        let add_query_params = SchemaNode::map(string());
+        SchemaNode::object(vec![
+            ObjectField {
+                serialized_name: "regex_replace".into(),
+                aliases: vec![],
+                schema: regex_replace,
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "strip_query_params".into(),
+                aliases: vec![],
+                schema: strip_query_params,
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "add_query_params".into(),
+                aliases: vec![],
+                schema: add_query_params,
+                required: false,
+                flattened: false,
+            },
+        ])
+    }
 }
 
 // -----------------------------------------------------------------------------

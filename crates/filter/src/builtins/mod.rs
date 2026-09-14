@@ -7,7 +7,19 @@ pub mod http;
 mod tcp;
 
 #[cfg(feature = "basic-auth-filter")]
+pub(crate) use http::BasicAuthConfig;
+#[cfg(feature = "basic-auth-filter")]
 pub use http::BasicAuthFilter;
+#[cfg(feature = "policy-engine")]
+pub(crate) use http::PolicyFilterConfig;
+pub(crate) use http::{
+    AccessLogConfig, CircuitBreakerConfig, CompressionFilterConfig, CorsConfig, CredentialInjectionConfig, CsrfConfig,
+    EndpointSelectorConfig, ForwardedHeadersConfig, GrpcDetectionConfig, GuardrailsConfig, HeaderFilterConfig,
+    IpAclConfig, IterativeRequestRouterConfig, JsonBodyFieldConfig, JsonRpcConfig, LoadBalancerConfig,
+    PathRewriteConfig, PeerIdentityTrustConfig, RateLimitConfig, RequestIdFilterConfig, RouterConfig,
+    StaticResponseConfig, StickySessionsConfig, TimeoutFilterConfig, TraceContextFilterConfig, UrlRewriteConfig,
+    traffic_management::RedirectConfig,
+};
 pub use http::{
     AccessLogFilter, CircuitBreakerFilter, CompressionFilter, ContainsValue, CorsFilter, CredentialInjectionFilter,
     CsrfFilter, DisallowedOriginMode, EndpointReselector, EndpointSelectorFilter, ForwardedHeadersFilter,
@@ -20,4 +32,5 @@ pub use http::{
 };
 #[cfg(feature = "policy-engine")]
 pub use http::{PolicyFilter, PolicyPluginFactoryFn, register_policy_plugin_factory, set_policy_subrequest_connector};
+pub(crate) use tcp::{SniRouterConfig, TcpLoadBalancerConfig};
 pub use tcp::{SniRouterFilter, TcpAccessLogFilter, TcpLoadBalancerFilter};

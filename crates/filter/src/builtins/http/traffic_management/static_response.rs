@@ -18,9 +18,10 @@ use crate::{
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the static response filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.static_response")]
 #[serde(deny_unknown_fields)]
-struct StaticResponseConfig {
+pub(crate) struct StaticResponseConfig {
     /// Optional response body string.
     #[serde(default)]
     body: Option<String>,
@@ -34,9 +35,10 @@ struct StaticResponseConfig {
 }
 
 /// A name/value header pair in the static response config.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.static_response.header")]
 #[serde(deny_unknown_fields)]
-struct HeaderEntry {
+pub(crate) struct HeaderEntry {
     /// Header field name.
     name: String,
 

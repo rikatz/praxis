@@ -4,6 +4,7 @@
 //! CSRF protection filter via origin validation.
 
 mod config;
+pub(crate) use config::CsrfConfig;
 mod origin;
 
 #[cfg(test)]
@@ -25,7 +26,7 @@ use rand::RngExt as _;
 use tracing::{debug, trace, warn};
 
 use self::{
-    config::{CsrfConfig, validate_config},
+    config::validate_config,
     origin::{TrustedOrigins, build_trusted_origins, extract_origin},
 };
 use crate::{

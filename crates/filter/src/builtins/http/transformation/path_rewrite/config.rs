@@ -38,9 +38,10 @@ pub(super) enum PathRewriteOperation {
 /// Raw deserialized YAML config for the path rewrite filter.
 ///
 /// Exactly one of the three operation fields must be set.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.transformation.path_rewrite")]
 #[serde(deny_unknown_fields)]
-pub(super) struct PathRewriteConfig {
+pub(crate) struct PathRewriteConfig {
     /// Remove this prefix from the request path.
     #[serde(default)]
     strip_prefix: Option<String>,
@@ -98,9 +99,10 @@ impl PathRewriteConfig {
 // -----------------------------------------------------------------------------
 
 /// Regex find/replace configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.path_rewrite.replace")]
 #[serde(deny_unknown_fields)]
-struct ReplaceConfig {
+pub(crate) struct ReplaceConfig {
     /// Regex pattern to match.
     pattern: String,
 

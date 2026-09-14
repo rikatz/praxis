@@ -45,33 +45,6 @@ pub enum FailureMode {
     Open,
 }
 
-// -----
-// FilterEntryConfig
-// -----
-
-/// Transparent wrapper for filter configuration values.
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
-#[serde(transparent)]
-#[expect(
-    dead_code,
-    unreachable_pub,
-    reason = "compatibility wrapper retained while filter schemas migrate"
-)]
-pub struct FilterEntryConfig(pub serde_yaml::Value);
-
-impl praxis_config_catalog::ConfigSchemaFor for FilterEntryConfig {
-    fn schema_id() -> praxis_config_catalog::SchemaId {
-        praxis_config_catalog::SchemaId::from("core.filter.entry.config")
-    }
-
-    fn register(
-        _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
-        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
-    ) -> praxis_config_catalog::SchemaNode {
-        praxis_config_catalog::SchemaNode::reference("core.filter.entry.config".to_owned())
-    }
-}
-
 // -----------------------------------------------------------------------------
 // FilterChainConfig
 // -----------------------------------------------------------------------------

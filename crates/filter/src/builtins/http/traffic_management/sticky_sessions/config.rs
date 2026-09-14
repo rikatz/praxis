@@ -17,7 +17,8 @@ const MAX_ENTRIES_UPPER_BOUND: u64 = 200_000;
 /// Uses `#[serde(tag = "type")]` so the YAML discriminator is `type: cookie`,
 /// `type: header`, or `type: learn`. Each variant carries only the fields
 /// relevant to that mode, eliminating conditionally-required `Option` fields.
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sticky_sessions.persistence")]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub(crate) enum PersistenceConfig {
     /// Proxy-managed session cookie.
@@ -63,7 +64,8 @@ impl PersistenceConfig {
 // -----------------------------------------------------------------------------
 
 /// `SameSite` cookie attribute.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sticky_sessions.same_site")]
 pub(crate) enum SameSite {
     /// `SameSite=Strict`
     Strict,
@@ -89,7 +91,8 @@ impl SameSite {
 // -----------------------------------------------------------------------------
 
 /// Configurable attributes for the session cookie.
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sticky_sessions.cookie_attributes")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct CookieAttributes {
     /// `Domain` attribute.
@@ -118,7 +121,8 @@ pub(crate) struct CookieAttributes {
 // -----------------------------------------------------------------------------
 
 /// How entries are evicted when the store reaches capacity.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sticky_sessions.eviction_policy")]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum EvictionPolicy {
     /// Evict least-recently-accessed entries first.
@@ -174,12 +178,37 @@ impl<'de> Deserialize<'de> for MaxEntries {
     }
 }
 
+impl praxis_config_catalog::ConfigSchemaFor for MaxEntries {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.max_entries")
+    }
+
+    fn register(
+        _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        let mut node = praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Integer);
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("minimum".to_owned(), serde_json::json!(1));
+        params.insert("maximum".to_owned(), serde_json::json!(200000));
+        node.rules.push(praxis_config_catalog::PortableRule {
+            code: "core.max_entries.range".to_owned(),
+            target: "value".to_owned(),
+            kind: praxis_config_catalog::RuleKind::NumericBounds,
+            parameters: params,
+            message: "max_entries must be in 1..=200000".to_owned(),
+        });
+        node
+    }
+}
+
 // -----------------------------------------------------------------------------
 // ClusterSessionConfig
 // -----------------------------------------------------------------------------
 
 /// Per-cluster session persistence configuration.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sticky_sessions.cluster")]
 pub(crate) struct ClusterSessionConfig {
     /// Cluster name this config applies to.
     pub name: String,
@@ -249,7 +278,8 @@ impl ClusterSessionConfig {
 // -----------------------------------------------------------------------------
 
 /// Top-level config for the sticky sessions filter.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.sticky_sessions")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct StickySessionsConfig {
     /// Per-cluster session persistence configurations.

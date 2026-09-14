@@ -21,7 +21,7 @@ use serde::Deserialize;
 /// ```
 #[derive(Debug, Deserialize)]
 #[serde(try_from = "RawBasicAuthConfig")]
-pub(super) struct BasicAuthConfig {
+pub(crate) struct BasicAuthConfig {
     /// Realm string for the `WWW-Authenticate` challenge.
     pub realm: String,
 
@@ -29,7 +29,7 @@ pub(super) struct BasicAuthConfig {
     pub strip_authorization: bool,
 
     /// Credential source (inline list or KV store name).
-    pub source: CredentialSourceConfig,
+    pub(super) source: CredentialSourceConfig,
 }
 
 /// Where credentials are looked up, as specified in config.
@@ -43,7 +43,8 @@ pub(super) enum CredentialSourceConfig {
 }
 
 /// Raw deserialization target for [`BasicAuthConfig`].
-#[derive(Deserialize)]
+#[derive(Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.basic_auth.raw")]
 #[serde(deny_unknown_fields)]
 struct RawBasicAuthConfig {
     /// Realm string for the `WWW-Authenticate` challenge.
@@ -123,6 +124,56 @@ pub(super) struct InlineCredential {
 
     /// Password source (literal or environment variable).
     pub source: PasswordSource,
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for BasicAuthConfig {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.filter.http.security.basic_auth")
+    }
+
+    fn register(
+        schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        <RawBasicAuthConfig as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting)
+    }
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for InlineCredential {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.basic_auth.credential")
+    }
+
+    fn register(
+        schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        use praxis_config_catalog::ObjectField;
+        let string = <String as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting);
+        praxis_config_catalog::SchemaNode::object(vec![
+            ObjectField {
+                serialized_name: "username".into(),
+                aliases: vec![],
+                schema: string.clone(),
+                required: true,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "password".into(),
+                aliases: vec![],
+                schema: string.clone(),
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "env_var".into(),
+                aliases: vec![],
+                schema: string,
+                required: false,
+                flattened: false,
+            },
+        ])
+    }
 }
 
 /// Raw deserialization target for [`InlineCredential`].

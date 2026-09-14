@@ -135,6 +135,7 @@
 mod assertions;
 mod common_message_format;
 mod config;
+pub(crate) use config::PolicyFilterConfig;
 mod error;
 mod filter;
 mod host_plugins;

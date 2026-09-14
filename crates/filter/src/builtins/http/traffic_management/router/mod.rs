@@ -12,6 +12,7 @@
 //! host, to choose a cluster.
 
 mod config;
+pub(crate) use config::RouterConfig;
 mod json_alias;
 mod matching;
 
@@ -38,7 +39,7 @@ use tracing::{debug, info, trace};
 use self::{
     config::{
         DEFAULT_JSON_ALIAS_HEADER, DEFAULT_JSON_ALIAS_MAX_BODY_BYTES, JsonAlias, MAX_JSON_ALIAS_BODY_BYTES,
-        RouterConfig, RouterRouteConfig,
+        RouterRouteConfig,
     },
     matching::{route_matches_request, should_stop_early, update_best_match},
 };

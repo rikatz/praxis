@@ -63,13 +63,14 @@ const INVALID_PARENT_ID: &str = "0000000000000000";
 ///
 /// Currently accepts no fields; reserved for future options such as
 /// trusted-header policies or sampling flag overrides.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.observability.trace_context")]
 #[serde(deny_unknown_fields)]
 #[expect(
     clippy::empty_structs_with_brackets,
     reason = "brackets required for serde mapping deserialization"
 )]
-struct TraceContextFilterConfig {}
+pub(crate) struct TraceContextFilterConfig {}
 
 // -----------------------------------------------------------------------------
 // Parsed Traceparent

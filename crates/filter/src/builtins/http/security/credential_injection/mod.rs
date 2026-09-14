@@ -17,4 +17,5 @@ mod filter;
 )]
 mod tests;
 
+pub(crate) use self::config::CredentialInjectionConfig;
 pub use self::filter::CredentialInjectionFilter;

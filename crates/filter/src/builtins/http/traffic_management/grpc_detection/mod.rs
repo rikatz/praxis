@@ -26,6 +26,11 @@ use crate::{
     parse_filter_config,
 };
 
+#[derive(serde::Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.grpc_detection")]
+#[serde(deny_unknown_fields)]
+pub(crate) struct GrpcDetectionConfig {}
+
 /// Detects gRPC requests from the `content-type` header and promotes the
 /// variant to filter metadata and results for downstream routing.
 ///

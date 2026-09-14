@@ -60,7 +60,8 @@ const MAX_DEPTH: u8 = 3;
 ///         next: tool-dispatch
 ///       - default: true
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.iterative_request_router")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct IterativeRequestRouterConfig {
     /// Name of the first step to execute.
@@ -100,7 +101,8 @@ pub(crate) struct IterativeRequestRouterConfig {
 }
 
 /// A named step within the iterative router.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.iterative_request_router.step")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct StepConfig {
     /// Step name (must be unique within the router).
@@ -116,7 +118,8 @@ pub(crate) struct StepConfig {
 }
 
 /// A transition rule evaluated after a step completes.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.iterative_request_router.transition")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct StepTransition {
     /// If true, this is the default (always-match) rule.
@@ -165,7 +168,8 @@ pub(crate) struct StepTransition {
 }
 
 /// Where the step's response originated.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.iterative_request_router.response_origin")]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum ResponseOrigin {
     /// A real HTTP response from the upstream.
@@ -177,7 +181,8 @@ pub(crate) enum ResponseOrigin {
 }
 
 /// Classification of transport-level failures.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.iterative_request_router.transport_error")]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum TransportErrorKind {
     /// All concurrency slots were busy and the admission wait timed out.

@@ -46,9 +46,6 @@ pub(super) fn pattern_specificity(pattern: &str) -> u32 {
 pub(super) struct AliasMatch<'a> {
     /// The matching alias rule.
     pub alias: &'a JsonAlias,
-    /// The route that owns the matching alias.
-    #[expect(dead_code, reason = "cluster selection is validated before body aliasing is wired")]
-    pub route: &'a RouterRouteConfig,
     /// Alias specificity within the owning route.
     pub specificity: u32,
 }
@@ -64,7 +61,7 @@ pub(super) fn resolve_json_alias<'a>(
         let Some(aliases) = &route.json_aliases else {
             continue;
         };
-        let best = best_alias_in_route(field, value, aliases, route);
+        let best = best_alias_in_route(field, value, aliases);
         if best.is_some() {
             return best;
         }
@@ -74,12 +71,7 @@ pub(super) fn resolve_json_alias<'a>(
 
 /// Alias specificity only decides among aliases on the same route;
 /// route order has already been handled by `resolve_json_alias`.
-fn best_alias_in_route<'a>(
-    field: &str,
-    value: &str,
-    aliases: &'a [JsonAlias],
-    route: &'a RouterRouteConfig,
-) -> Option<AliasMatch<'a>> {
+fn best_alias_in_route<'a>(field: &str, value: &str, aliases: &'a [JsonAlias]) -> Option<AliasMatch<'a>> {
     let mut best: Option<AliasMatch<'a>> = None;
     for alias in aliases {
         if alias.field != field || !pattern_matches(&alias.pattern, value) {
@@ -88,11 +80,7 @@ fn best_alias_in_route<'a>(
         let specificity = pattern_specificity(&alias.pattern);
         let dominated = best.as_ref().is_some_and(|b| specificity <= b.specificity);
         if !dominated {
-            best = Some(AliasMatch {
-                alias,
-                route,
-                specificity,
-            });
+            best = Some(AliasMatch { alias, specificity });
         }
     }
     best

@@ -91,14 +91,16 @@ pub struct AccessLogFilter {
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the access log filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.observability.access_log")]
 #[serde(deny_unknown_fields)]
-struct AccessLogConfig {
+pub(crate) struct AccessLogConfig {
     /// Fraction of requests to log (0.0, 1.0]. Defaults to 1.0.
     #[serde(default = "default_sample_rate")]
     sample_rate: f64,
 
     /// Scalar field tokens; replaces the default ten when present.
+    #[config_schema(dynamic)]
     fields: Option<Vec<serde_yaml::Value>>,
 
     /// Request header names allowed for `request_header.<name>` tokens.
@@ -112,16 +114,18 @@ struct AccessLogConfig {
 }
 
 /// Emit-time access log conditions.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.access_log.conditions")]
 #[serde(deny_unknown_fields)]
-struct AccessLogEmitConditions {
+pub(crate) struct AccessLogEmitConditions {
     min_duration_ms: Option<u64>,
     status_classes: Option<Vec<StatusClass>>,
     paths: Option<Vec<String>>,
 }
 
 /// HTTP status class for emit-time conditions.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.access_log.status_class")]
 enum StatusClass {
     /// 100-199.
     #[serde(rename = "1xx")]

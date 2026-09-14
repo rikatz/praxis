@@ -27,9 +27,10 @@ const DEFAULT_HEADER_NAME: &str = "X-Request-ID";
 // -----------------------------------------------------------------------------
 
 /// Configuration for the request ID propagation filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.observability.request_id")]
 #[serde(deny_unknown_fields)]
-struct RequestIdFilterConfig {
+pub(crate) struct RequestIdFilterConfig {
     /// Name of the header to read, generate, and forward.
     #[serde(default = "default_header_name")]
     header_name: String,

@@ -13,9 +13,10 @@ use crate::{FilterError, body::DEFAULT_JSON_BODY_MAX_BYTES};
 // -----------------------------------------------------------------------------
 
 /// A single field-to-header mapping used in the `fields` list.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.json_body_field.mapping")]
 #[serde(deny_unknown_fields)]
-pub(super) struct JsonBodyFieldMapping {
+pub(crate) struct JsonBodyFieldMapping {
     /// Top-level JSON field name to extract.
     pub field: String,
 
@@ -33,9 +34,10 @@ pub(super) struct JsonBodyFieldMapping {
 /// multi-field syntax (`fields` list), but not both.
 ///
 /// [`JsonBodyFieldFilter`]: super::JsonBodyFieldFilter
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.payload_processing.json_body_field")]
 #[serde(deny_unknown_fields)]
-pub(super) struct JsonBodyFieldConfig {
+pub(crate) struct JsonBodyFieldConfig {
     /// Single-field: top-level JSON field name to extract.
     pub field: Option<String>,
 

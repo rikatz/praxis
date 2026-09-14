@@ -8,6 +8,7 @@
 //! gated behind the experimental `basic-auth-filter` cargo feature until then.
 
 mod config;
+pub(crate) use config::BasicAuthConfig;
 mod filter;
 
 #[cfg(test)]

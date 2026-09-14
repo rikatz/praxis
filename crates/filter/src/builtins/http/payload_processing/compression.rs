@@ -33,9 +33,10 @@ const MAX_ZSTD_LEVEL: u32 = 22;
 // -----------------------------------------------------------------------------
 
 /// Per-algorithm YAML configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.compression.algorithm")]
 #[serde(deny_unknown_fields)]
-struct AlgorithmConfig {
+pub(crate) struct AlgorithmConfig {
     /// Whether this algorithm is enabled.
     #[serde(default = "default_true")]
     enabled: bool,
@@ -45,9 +46,10 @@ struct AlgorithmConfig {
 }
 
 /// YAML configuration for the compression filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.payload_processing.compression")]
 #[serde(deny_unknown_fields)]
-struct CompressionFilterConfig {
+pub(crate) struct CompressionFilterConfig {
     /// Default compression level for all algorithms.
     /// Clamped to each algorithm's maximum (gzip: 9,
     /// brotli: 11, zstd: 22).

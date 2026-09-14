@@ -101,7 +101,8 @@ static EMAIL_RE: LazyLock<Regex> =
 /// let kinds: Vec<PiiKind> = serde_yaml::from_str("[ssn, credit_card, phone, email]").unwrap();
 /// assert_eq!(kinds.len(), 4);
 /// ```
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.guardrails.pii_kind")]
 #[serde(rename_all = "snake_case")]
 pub enum PiiKind {
     /// US Social Security Numbers (e.g. `123-45-6789`).

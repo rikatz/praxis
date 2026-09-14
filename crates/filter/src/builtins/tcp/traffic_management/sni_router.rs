@@ -165,9 +165,10 @@ struct WildcardRoute {
 // -----------------------------------------------------------------------------
 
 /// YAML configuration for the SNI router filter.
-#[derive(Deserialize)]
+#[derive(Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.tcp.traffic_management.sni_router")]
 #[serde(deny_unknown_fields)]
-struct SniRouterConfig {
+pub(crate) struct SniRouterConfig {
     /// Fallback upstream when no route matches.
     #[serde(default)]
     default_upstream: Option<String>,
@@ -177,9 +178,10 @@ struct SniRouterConfig {
 }
 
 /// A single SNI route entry.
-#[derive(Deserialize)]
+#[derive(Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.sni_router.route")]
 #[serde(deny_unknown_fields)]
-struct SniRouteEntry {
+pub(crate) struct SniRouteEntry {
     /// Server name patterns (exact or wildcard like `*.example.com`).
     server_names: Vec<String>,
 

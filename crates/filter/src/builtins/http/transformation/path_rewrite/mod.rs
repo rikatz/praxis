@@ -4,6 +4,7 @@
 //! Path rewriting filter: strip prefix, add prefix, or regex replace on request paths.
 
 mod config;
+pub(crate) use config::PathRewriteConfig;
 mod ops;
 
 #[cfg(test)]
@@ -23,10 +24,7 @@ use std::borrow::Cow;
 use async_trait::async_trait;
 use tracing::{debug, trace};
 
-use self::{
-    config::PathRewriteConfig,
-    ops::{PathRewriteOp, append_query, build_op, rewrite_path},
-};
+use self::ops::{PathRewriteOp, append_query, build_op, rewrite_path};
 use super::path_sanitize::normalize_rewritten_path;
 use crate::{
     FilterAction, FilterError,

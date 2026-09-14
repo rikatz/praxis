@@ -4,6 +4,7 @@
 //! Per-cluster circuit breaker filter.
 
 mod config;
+pub(crate) use config::CircuitBreakerConfig;
 
 #[cfg(test)]
 #[expect(clippy::allow_attributes, reason = "blanket test suppressions")]
@@ -26,7 +27,6 @@ use praxis_core::circuit::{
 };
 use tracing::{debug, warn};
 
-use self::config::CircuitBreakerConfig;
 use crate::{
     FilterError,
     actions::{FilterAction, Rejection},

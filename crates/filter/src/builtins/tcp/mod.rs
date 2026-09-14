@@ -7,4 +7,5 @@ mod observability;
 mod traffic_management;
 
 pub use observability::TcpAccessLogFilter;
+pub(crate) use traffic_management::{SniRouterConfig, TcpLoadBalancerConfig};
 pub use traffic_management::{SniRouterFilter, TcpLoadBalancerFilter};

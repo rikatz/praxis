@@ -20,7 +20,8 @@ use serde::Deserialize;
 /// let mode: DisallowedOriginMode = serde_yaml::from_str("reject").unwrap();
 /// assert_eq!(mode, DisallowedOriginMode::Reject);
 /// ```
-#[derive(Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Default, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.cors.disallowed_origin_mode")]
 #[serde(rename_all = "snake_case")]
 pub enum DisallowedOriginMode {
     /// Omit CORS headers and return 204 (default).
@@ -37,9 +38,10 @@ pub enum DisallowedOriginMode {
 
 /// Deserialized YAML config for the CORS filter.
 #[expect(clippy::struct_excessive_bools, reason = "CORS spec flags")]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.cors")]
 #[serde(deny_unknown_fields)]
-pub(super) struct CorsConfig {
+pub(crate) struct CorsConfig {
     /// Allowed origins. Use `["*"]` for any origin.
     pub allow_origins: Vec<String>,
 

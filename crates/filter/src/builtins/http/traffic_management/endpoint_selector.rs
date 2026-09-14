@@ -36,7 +36,8 @@ const MAX_CONNECTION_TIMEOUT_MS: u64 = 3_600_000;
 ///
 /// Uses the same timeout fields as a configured upstream cluster. All
 /// fields are optional; omitted fields retain Pingora defaults.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.endpoint_selector.connection")]
 #[serde(deny_unknown_fields)]
 struct EndpointConnectionConfig {
     /// TCP connection timeout in milliseconds.
@@ -126,9 +127,10 @@ fn cache_tls(tls: Option<&ClusterTls>) -> Result<Option<CachedClusterTls>, Filte
 }
 
 /// Configuration for the endpoint selector filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.endpoint_selector")]
 #[serde(deny_unknown_fields)]
-struct EndpointSelectorConfig {
+pub(crate) struct EndpointSelectorConfig {
     /// Optional connection tuning for selected upstreams.
     #[serde(default)]
     connection: EndpointConnectionConfig,

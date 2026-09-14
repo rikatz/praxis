@@ -4,6 +4,7 @@
 //! Token bucket rate limiter.
 
 mod config;
+pub(crate) use config::RateLimitConfig;
 mod limiter;
 
 pub use self::config::RateLimitMode;
@@ -31,7 +32,6 @@ use std::{
 use async_trait::async_trait;
 use dashmap::DashMap;
 
-use self::config::RateLimitConfig;
 use super::token_bucket::TokenBucket;
 use crate::{
     FilterAction, FilterError, Rejection,

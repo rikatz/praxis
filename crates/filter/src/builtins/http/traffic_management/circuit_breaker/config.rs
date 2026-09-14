@@ -28,9 +28,10 @@ use serde::Deserialize;
 /// let cfg: Cfg = serde_yaml::from_str(yaml).unwrap();
 /// assert_eq!(cfg.clusters.len(), 1);
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.circuit_breaker")]
 #[serde(deny_unknown_fields)]
-pub(super) struct CircuitBreakerConfig {
+pub(crate) struct CircuitBreakerConfig {
     /// Per-cluster circuit breaker settings.
     pub clusters: Vec<ClusterCircuitBreakerConfig>,
 }
@@ -60,9 +61,10 @@ pub(super) struct CircuitBreakerConfig {
 /// assert_eq!(&*e.name, "backend");
 /// assert!(e.half_open_timeout_secs.is_none());
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.circuit_breaker.cluster")]
 #[serde(deny_unknown_fields)]
-pub(super) struct ClusterCircuitBreakerConfig {
+pub(crate) struct ClusterCircuitBreakerConfig {
     /// Cluster name (must match a cluster in the load balancer).
     pub name: Arc<str>,
 

@@ -28,9 +28,10 @@ use crate::{
 // -----------------------------------------------------------------------------
 
 /// Deserialization wrapper for the TCP load balancer's YAML config.
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.tcp.traffic_management.tcp_load_balancer")]
 #[serde(deny_unknown_fields)]
-struct TcpLoadBalancerConfig {
+pub(crate) struct TcpLoadBalancerConfig {
     /// Cluster definitions.
     #[serde(default)]
     clusters: Vec<Cluster>,

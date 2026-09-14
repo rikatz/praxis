@@ -20,9 +20,10 @@ use crate::{
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the forwarded headers filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.forwarded_headers")]
 #[serde(deny_unknown_fields)]
-struct ForwardedHeadersConfig {
+pub(crate) struct ForwardedHeadersConfig {
     /// CIDR ranges of trusted proxies whose existing
     /// X-Forwarded-For values are preserved (appended to).
     /// Untrusted sources have the header overwritten.

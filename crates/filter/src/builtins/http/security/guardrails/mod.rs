@@ -20,6 +20,7 @@ mod rule;
 )]
 mod tests;
 
+pub(crate) use self::config::GuardrailsConfig;
 pub use self::{
     config::{ContainsValue, GuardrailsAction, RuleTargetKind},
     filter::GuardrailsFilter,

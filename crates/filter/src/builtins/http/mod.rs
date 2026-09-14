@@ -7,24 +7,38 @@ pub(crate) mod compile_user_regex;
 mod observability;
 pub mod payload_processing;
 mod security;
-mod traffic_management;
+pub(crate) mod traffic_management;
 mod transformation;
 pub mod value_safety;
 
+pub(crate) use observability::{AccessLogConfig, RequestIdFilterConfig, TraceContextFilterConfig};
 pub use observability::{
     AccessLogFilter, RequestIdFilter, TraceContextFilter, access_record_already_emitted, bodyless_response,
     emit_access_record, mark_access_record_emitted,
 };
 pub use payload_processing::{CompressionFilter, JsonBodyFieldFilter, JsonRpcFilter};
+pub(crate) use payload_processing::{CompressionFilterConfig, JsonBodyFieldConfig, json_rpc::config::JsonRpcConfig};
+#[cfg(feature = "basic-auth-filter")]
+pub(crate) use security::BasicAuthConfig;
 #[cfg(feature = "basic-auth-filter")]
 pub use security::BasicAuthFilter;
+#[cfg(feature = "policy-engine")]
+pub(crate) use security::PolicyFilterConfig;
 pub use security::{
     ContainsValue, CorsFilter, CredentialInjectionFilter, CsrfFilter, DisallowedOriginMode, ForwardedHeadersFilter,
     GuardrailsAction, GuardrailsFilter, IpAclFilter, PeerIdentityTrustFilter, PiiKind, RuleTargetKind,
 };
+pub(crate) use security::{
+    CorsConfig, CredentialInjectionConfig, CsrfConfig, ForwardedHeadersConfig, GuardrailsConfig, IpAclConfig,
+    PeerIdentityTrustConfig,
+};
 #[cfg(feature = "policy-engine")]
 pub use security::{
     PolicyFilter, PolicyPluginFactoryFn, register_policy_plugin_factory, set_policy_subrequest_connector,
+};
+pub(crate) use traffic_management::{
+    CircuitBreakerConfig, EndpointSelectorConfig, GrpcDetectionConfig, IterativeRequestRouterConfig,
+    LoadBalancerConfig, RateLimitConfig, RouterConfig, StaticResponseConfig, StickySessionsConfig, TimeoutFilterConfig,
 };
 pub use traffic_management::{
     CircuitBreakerFilter, EndpointReselector, EndpointSelectorFilter, GrpcDetectionFilter,
@@ -35,3 +49,4 @@ pub use traffic_management::{
 pub use transformation::{
     HeaderFilter, PathRewriteFilter, UrlRewriteFilter, has_dot_dot_traversal, normalize_rewritten_path,
 };
+pub(crate) use transformation::{HeaderFilterConfig, PathRewriteConfig, UrlRewriteConfig};

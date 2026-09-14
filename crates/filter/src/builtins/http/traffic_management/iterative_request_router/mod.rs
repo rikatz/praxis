@@ -38,6 +38,7 @@
 //! See proposal 00786 for the full design rationale.
 
 mod config;
+pub(crate) use config::IterativeRequestRouterConfig;
 mod runner;
 mod streaming;
 #[cfg(test)]
@@ -63,7 +64,6 @@ use http::HeaderMap;
 use tracing::{debug, info, warn};
 
 use self::{
-    config::IterativeRequestRouterConfig,
     runner::{IrrStepRunner, OpenedStepKind},
     streaming::{IrrStreamingSession, ensure_combined_retained_limit, step_completion_from},
 };

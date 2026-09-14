@@ -23,9 +23,10 @@ use serde::Deserialize;
 ///     header_prefix: "Bearer "
 ///     strip_client_credential: true
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.credential_injection")]
 #[serde(deny_unknown_fields)]
-pub(super) struct CredentialInjectionConfig {
+pub(crate) struct CredentialInjectionConfig {
     /// Per-cluster credential injection rules.
     pub clusters: Vec<ClusterCredentialConfig>,
 }
@@ -41,7 +42,7 @@ pub(super) struct CredentialInjectionConfig {
 /// read once at filter construction time.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-pub(super) struct ClusterCredentialConfig {
+pub(crate) struct ClusterCredentialConfig {
     /// Cluster name this rule applies to.
     pub name: String,
 
@@ -66,6 +67,65 @@ pub(super) struct ClusterCredentialConfig {
     /// Literal credential value. Mutually exclusive with `env_var`.
     /// Wrapped in [`SecretString`] to prevent accidental logging.
     pub value: Option<SecretString>,
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for ClusterCredentialConfig {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.credential_injection.cluster")
+    }
+
+    fn register(
+        schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        use praxis_config_catalog::{ObjectField, SchemaNode};
+        let mut secret = SchemaNode::simple(praxis_config_catalog::SchemaKind::String);
+        secret.sensitive = true;
+        SchemaNode::object(vec![
+            ObjectField {
+                serialized_name: "name".into(),
+                aliases: vec![],
+                schema: <String as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
+                required: true,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "env_var".into(),
+                aliases: vec![],
+                schema: <Option<String> as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "header".into(),
+                aliases: vec![],
+                schema: <String as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
+                required: true,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "header_prefix".into(),
+                aliases: vec![],
+                schema: <Option<String> as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "strip_client_credential".into(),
+                aliases: vec![],
+                schema: <bool as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
+                required: false,
+                flattened: false,
+            },
+            ObjectField {
+                serialized_name: "value".into(),
+                aliases: vec![],
+                schema: secret,
+                required: false,
+                flattened: false,
+            },
+        ])
+    }
 }
 
 impl fmt::Debug for ClusterCredentialConfig {

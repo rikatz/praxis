@@ -39,7 +39,8 @@ use crate::{
 // -----------------------------------------------------------------------------
 
 /// Configuration for the header manipulation filter.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.transformation.headers")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct HeaderFilterConfig {
     /// Headers to append to the upstream request.
@@ -68,7 +69,8 @@ pub(crate) struct HeaderFilterConfig {
 }
 
 /// A name/value pair used in header add/set/remove config.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.headers.header_pair")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct HeaderPair {
     /// Header field name.

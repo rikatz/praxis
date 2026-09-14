@@ -20,9 +20,10 @@ use crate::{
 // -----------------------------------------------------------------------------
 
 /// Configuration for the timeout filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.timeout")]
 #[serde(deny_unknown_fields)]
-struct TimeoutFilterConfig {
+pub(crate) struct TimeoutFilterConfig {
     /// Maximum allowed elapsed time from request receipt to response headers,
     /// in milliseconds. Requests that exceed this limit receive a 504.
     timeout_ms: u64,

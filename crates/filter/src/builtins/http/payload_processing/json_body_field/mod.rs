@@ -12,6 +12,8 @@
 mod config;
 mod extract;
 
+pub(crate) use config::JsonBodyFieldConfig;
+
 #[cfg(test)]
 #[expect(clippy::allow_attributes, reason = "blanket test suppressions")]
 #[allow(
@@ -28,10 +30,7 @@ mod tests;
 use async_trait::async_trait;
 use bytes::Bytes;
 
-use self::{
-    config::{JsonBodyFieldConfig, build_mappings},
-    extract::extract_fields,
-};
+use self::{config::build_mappings, extract::extract_fields};
 use crate::{
     FilterAction, FilterError,
     body::{BodyAccess, BodyMode},

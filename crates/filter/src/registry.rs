@@ -340,6 +340,7 @@ impl FilterRegistry {
             FilterRegistration {
                 factory: RegisteredFilterFactory::ChainBinding(factory),
                 security_class,
+                schema: None,
             },
         );
         Ok(())
@@ -472,55 +473,105 @@ fn register_http_builtins(filters: &mut HashMap<String, FilterRegistration>) {
         StaticResponseFilter, TimeoutFilter, TraceContextFilter, UrlRewriteFilter,
     };
 
-    register_http(filters, "access_log", AccessLogFilter::from_config);
+    register_http::<crate::builtins::AccessLogConfig>(filters, "access_log", AccessLogFilter::from_config);
     #[cfg(feature = "basic-auth-filter")]
-    register_http_security(filters, "basic_auth", crate::BasicAuthFilter::from_config);
-    register_http(filters, "circuit_breaker", CircuitBreakerFilter::from_config);
-    register_http(filters, "compression", CompressionFilter::from_config);
-    register_http_security(filters, "cors", CorsFilter::from_config);
+    register_http_security::<crate::builtins::BasicAuthConfig>(
+        filters,
+        "basic_auth",
+        crate::BasicAuthFilter::from_config,
+    );
+    register_http::<crate::builtins::CircuitBreakerConfig>(
+        filters,
+        "circuit_breaker",
+        CircuitBreakerFilter::from_config,
+    );
+    register_http::<crate::builtins::CompressionFilterConfig>(filters, "compression", CompressionFilter::from_config);
+    register_http_security::<crate::builtins::CorsConfig>(filters, "cors", CorsFilter::from_config);
     #[cfg(feature = "policy-engine")]
-    register_http_security(filters, "policy", crate::PolicyFilter::from_config);
-    register_http_security(filters, "csrf", CsrfFilter::from_config);
-    register_http_security(filters, "credential_injection", CredentialInjectionFilter::from_config);
-    register_http(
+    register_http_security::<crate::builtins::PolicyFilterConfig>(filters, "policy", crate::PolicyFilter::from_config);
+    register_http_security::<crate::builtins::CsrfConfig>(filters, "csrf", CsrfFilter::from_config);
+    register_http_security::<crate::builtins::CredentialInjectionConfig>(
+        filters,
+        "credential_injection",
+        CredentialInjectionFilter::from_config,
+    );
+    register_http::<crate::builtins::EndpointSelectorConfig>(
         filters,
         "endpoint_selector",
         crate::builtins::EndpointSelectorFilter::from_config,
     );
-    register_http(filters, "headers", HeaderFilter::from_config);
-    register_http_security(filters, "forwarded_headers", ForwardedHeadersFilter::from_config);
-    register_http(filters, "grpc_detection", GrpcDetectionFilter::from_config);
-    register_http_security(filters, "guardrails", crate::GuardrailsFilter::from_config);
-    register_http_security(filters, "ip_acl", IpAclFilter::from_config);
-    register_http_with_registry(
+    register_http::<crate::builtins::HeaderFilterConfig>(filters, "headers", HeaderFilter::from_config);
+    register_http_security::<crate::builtins::ForwardedHeadersConfig>(
+        filters,
+        "forwarded_headers",
+        ForwardedHeadersFilter::from_config,
+    );
+    register_http::<crate::builtins::GrpcDetectionConfig>(filters, "grpc_detection", GrpcDetectionFilter::from_config);
+    register_http_security::<crate::builtins::GuardrailsConfig>(
+        filters,
+        "guardrails",
+        crate::GuardrailsFilter::from_config,
+    );
+    register_http_security::<crate::builtins::IpAclConfig>(filters, "ip_acl", IpAclFilter::from_config);
+    register_http_with_registry::<crate::builtins::IterativeRequestRouterConfig>(
         filters,
         "iterative_request_router",
         crate::builtins::IterativeRequestRouterFilter::from_config_with_registry,
     );
-    register_http(filters, "load_balancer", crate::LoadBalancerFilter::from_config);
-    register_http(filters, "path_rewrite", PathRewriteFilter::from_config);
-    register_http_security(filters, "rate_limit", RateLimitFilter::from_config);
-    register_http(filters, "redirect", RedirectFilter::from_config);
-    register_http(filters, "request_id", RequestIdFilter::from_config);
-    register_http(filters, "router", crate::RouterFilter::from_config);
-    register_http(filters, "static_response", StaticResponseFilter::from_config);
-    register_http(filters, "sticky_sessions", crate::StickySessionsFilter::from_config);
-    register_http(filters, "timeout", TimeoutFilter::from_config);
-    register_http(filters, "trace_context", TraceContextFilter::from_config);
-    register_http(filters, "url_rewrite", UrlRewriteFilter::from_config);
-    register_http(filters, "json_body_field", JsonBodyFieldFilter::from_config);
-    register_http(filters, "json_rpc", JsonRpcFilter::from_config);
-    register_http_security(filters, "peer_identity_trust", PeerIdentityTrustFilter::from_config);
+    register_http::<crate::builtins::LoadBalancerConfig>(
+        filters,
+        "load_balancer",
+        crate::LoadBalancerFilter::from_config,
+    );
+    register_http::<crate::builtins::PathRewriteConfig>(filters, "path_rewrite", PathRewriteFilter::from_config);
+    register_http_security::<crate::builtins::RateLimitConfig>(filters, "rate_limit", RateLimitFilter::from_config);
+    register_http::<crate::builtins::RedirectConfig>(filters, "redirect", RedirectFilter::from_config);
+    register_http::<crate::builtins::RequestIdFilterConfig>(filters, "request_id", RequestIdFilter::from_config);
+    register_http::<crate::builtins::RouterConfig>(filters, "router", crate::RouterFilter::from_config);
+    register_http::<crate::builtins::StaticResponseConfig>(
+        filters,
+        "static_response",
+        StaticResponseFilter::from_config,
+    );
+    register_http::<crate::builtins::StickySessionsConfig>(
+        filters,
+        "sticky_sessions",
+        crate::StickySessionsFilter::from_config,
+    );
+    register_http::<crate::builtins::TimeoutFilterConfig>(filters, "timeout", TimeoutFilter::from_config);
+    register_http::<crate::builtins::TraceContextFilterConfig>(
+        filters,
+        "trace_context",
+        TraceContextFilter::from_config,
+    );
+    register_http::<crate::builtins::UrlRewriteConfig>(filters, "url_rewrite", UrlRewriteFilter::from_config);
+    register_http::<crate::builtins::JsonBodyFieldConfig>(filters, "json_body_field", JsonBodyFieldFilter::from_config);
+    register_http::<crate::builtins::JsonRpcConfig>(filters, "json_rpc", JsonRpcFilter::from_config);
+    register_http_security::<crate::builtins::PeerIdentityTrustConfig>(
+        filters,
+        "peer_identity_trust",
+        PeerIdentityTrustFilter::from_config,
+    );
 }
 
-/// Registers a single HTTP filter factory with [`SecurityClass::Standard`].
-fn register_http(filters: &mut HashMap<String, FilterRegistration>, name: &str, factory_fn: HttpFilterFactoryFn) {
-    insert_registration(filters, name, http_builtin(factory_fn), SecurityClass::Standard);
+fn register_http<C: ConfigSchemaFor>(
+    filters: &mut HashMap<String, FilterRegistration>,
+    name: &str,
+    factory_fn: HttpFilterFactoryFn,
+) {
+    insert_registration(
+        filters,
+        name,
+        http_builtin(factory_fn),
+        SecurityClass::Standard,
+        Some(SchemaRegistration {
+            id: C::schema_id,
+            register: schema_for::<C>,
+        }),
+    );
 }
 
-/// Registers a built-in HTTP filter whose nested configuration must
-/// resolve against the same registry as its containing pipeline.
-fn register_http_with_registry(
+fn register_http_with_registry<C: ConfigSchemaFor>(
     filters: &mut HashMap<String, FilterRegistration>,
     name: &str,
     factory_fn: RegistryHttpFilterFactory,
@@ -530,30 +581,45 @@ fn register_http_with_registry(
         FilterRegistration {
             factory: RegisteredFilterFactory::HttpWithRegistry(factory_fn),
             security_class: SecurityClass::Standard,
-            schema: None,
+            schema: Some(SchemaRegistration {
+                id: C::schema_id,
+                register: schema_for::<C>,
+            }),
         },
     );
     debug_assert!(prev.is_none(), "duplicate built-in filter name: '{name}'");
 }
 
-/// Registers a single HTTP filter factory with [`SecurityClass::Security`].
-fn register_http_security(
+fn register_http_security<C: ConfigSchemaFor>(
     filters: &mut HashMap<String, FilterRegistration>,
     name: &str,
     factory_fn: HttpFilterFactoryFn,
 ) {
-    insert_registration(filters, name, http_builtin(factory_fn), SecurityClass::Security);
+    insert_registration(
+        filters,
+        name,
+        http_builtin(factory_fn),
+        SecurityClass::Security,
+        Some(SchemaRegistration {
+            id: C::schema_id,
+            register: schema_for::<C>,
+        }),
+    );
 }
 
 /// Registers all built-in TCP filter factories.
 fn register_tcp_builtins(filters: &mut HashMap<String, FilterRegistration>) {
-    register_tcp(filters, "sni_router", crate::builtins::SniRouterFilter::from_config);
-    register_tcp(
+    register_tcp::<crate::builtins::SniRouterConfig>(
+        filters,
+        "sni_router",
+        crate::builtins::SniRouterFilter::from_config,
+    );
+    register_tcp::<crate::factory::EmptyFilterConfig>(
         filters,
         "tcp_access_log",
         crate::builtins::TcpAccessLogFilter::from_config,
     );
-    register_tcp(
+    register_tcp::<crate::builtins::TcpLoadBalancerConfig>(
         filters,
         "tcp_load_balancer",
         crate::builtins::TcpLoadBalancerFilter::from_config,
@@ -561,8 +627,21 @@ fn register_tcp_builtins(filters: &mut HashMap<String, FilterRegistration>) {
 }
 
 /// Registers a single TCP filter factory with [`SecurityClass::Standard`].
-fn register_tcp(filters: &mut HashMap<String, FilterRegistration>, name: &str, factory_fn: TcpFilterFactoryFn) {
-    insert_registration(filters, name, tcp_builtin(factory_fn), SecurityClass::Standard);
+fn register_tcp<C: ConfigSchemaFor>(
+    filters: &mut HashMap<String, FilterRegistration>,
+    name: &str,
+    factory_fn: TcpFilterFactoryFn,
+) {
+    insert_registration(
+        filters,
+        name,
+        tcp_builtin(factory_fn),
+        SecurityClass::Standard,
+        Some(SchemaRegistration {
+            id: C::schema_id,
+            register: schema_for::<C>,
+        }),
+    );
 }
 
 /// Inserts a [`FilterRegistration`] into the map, asserting no duplicates.
@@ -571,13 +650,14 @@ fn insert_registration(
     name: &str,
     factory: FilterFactory,
     security_class: SecurityClass,
+    schema: Option<SchemaRegistration>,
 ) {
     let prev = filters.insert(
         name.to_owned(),
         FilterRegistration {
             factory: RegisteredFilterFactory::Standard(factory),
             security_class,
-            schema: None,
+            schema,
         },
     );
     debug_assert!(prev.is_none(), "duplicate built-in filter name: '{name}'");
@@ -673,6 +753,20 @@ mod tests {
         #[cfg(feature = "policy-engine")]
         assert!(names.contains(&"policy"), "policy should be registered");
     }
+
+    #[test]
+    fn every_builtin_has_a_typed_catalog_schema() {
+        let registry = FilterRegistry::with_builtins();
+        let mut schemas = BTreeMap::new();
+        let mut visiting = BTreeSet::new();
+        let missing: Vec<_> = registry
+            .available_filters()
+            .into_iter()
+            .filter(|name| registry.register_schema(name, &mut schemas, &mut visiting).is_none())
+            .collect();
+        assert!(missing.is_empty(), "builtins missing catalog schemas: {missing:?}");
+    }
+
 
     #[test]
     fn unknown_filter_errors() {

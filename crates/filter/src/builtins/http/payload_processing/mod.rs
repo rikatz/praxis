@@ -20,6 +20,8 @@ pub mod on_invalid;
 pub const MAX_DYNAMIC_VALUE_LEN: usize = 256;
 
 pub use compression::CompressionFilter;
+pub(crate) use compression::CompressionFilterConfig;
+pub(crate) use json_body_field::JsonBodyFieldConfig;
 pub use json_body_field::JsonBodyFieldFilter;
 pub use json_rpc::JsonRpcFilter;
 pub use on_invalid::OnInvalidBehavior;

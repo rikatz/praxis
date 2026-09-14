@@ -20,7 +20,8 @@ use serde::Deserialize;
 /// let mode: RateLimitMode = serde_yaml::from_str("per_ip").unwrap();
 /// assert!(matches!(mode, RateLimitMode::PerIp));
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.rate_limit.mode")]
 #[serde(rename_all = "snake_case")]
 pub enum RateLimitMode {
     /// One shared bucket for all clients.
@@ -35,9 +36,10 @@ pub enum RateLimitMode {
 // -----------------------------------------------------------------------------
 
 /// Deserialized YAML config for the rate limit filter.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.rate_limit")]
 #[serde(deny_unknown_fields)]
-pub(super) struct RateLimitConfig {
+pub(crate) struct RateLimitConfig {
     /// Whether to use a single global bucket or per-IP buckets.
     pub mode: RateLimitMode,
 

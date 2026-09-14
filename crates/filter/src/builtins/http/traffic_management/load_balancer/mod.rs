@@ -85,9 +85,10 @@ pub struct LoadBalancerFilter {
 }
 
 /// Deserialization wrapper for the load balancer's YAML config.
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.traffic_management.load_balancer")]
 #[serde(deny_unknown_fields)]
-struct LoadBalancerConfig {
+pub(crate) struct LoadBalancerConfig {
     /// Cluster definitions.
     #[serde(default)]
     clusters: Vec<Cluster>,

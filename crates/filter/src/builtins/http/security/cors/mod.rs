@@ -8,6 +8,7 @@ mod config;
 mod headers;
 mod origin;
 
+pub(crate) use self::config::CorsConfig;
 pub use self::config::DisallowedOriginMode;
 
 #[cfg(test)]
@@ -27,7 +28,7 @@ use http::HeaderValue;
 use tracing::{debug, trace};
 
 use self::{
-    config::{CorsConfig, validate_config},
+    config::validate_config,
     headers::{build_preflight_rejection, inject_response_headers},
     origin::{OriginPolicy, build_origin_policy},
 };

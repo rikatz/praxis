@@ -36,18 +36,20 @@ const SHA256_HEX_DIGEST_LEN: usize = 64;
 ///   - cert_digest: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 ///     organization: example-org
 /// ```
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.peer_identity_trust")]
 #[serde(deny_unknown_fields)]
-struct PeerIdentityTrustConfig {
+pub(crate) struct PeerIdentityTrustConfig {
     /// Trusted peer entries.
     trusted_peers: Vec<TrustedPeerConfig>,
 }
 
 /// A trusted peer entry. All configured fields must match.
 /// Omitted fields are not checked.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.peer_identity_trust.peer")]
 #[serde(deny_unknown_fields)]
-struct TrustedPeerConfig {
+pub(crate) struct TrustedPeerConfig {
     /// Lowercase hex-encoded SHA-256 certificate digest.
     cert_digest: Option<String>,
 

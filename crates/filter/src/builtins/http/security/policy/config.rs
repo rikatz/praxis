@@ -30,7 +30,8 @@ use serde::Deserialize;
 /// and identity-source declarations. The filter loads it once at
 /// construction and rejects misconfigured policy at server startup
 /// (fail-fast rather than at first request).
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.policy")]
 #[serde(deny_unknown_fields)]
 pub(crate) struct PolicyFilterConfig {
     /// Body-access tier. `ReadOnly` (default) lets APL inspect request
@@ -125,7 +126,8 @@ fn default_max_buffer_bytes() -> usize {
 /// Mirrors `praxis_filter::BodyAccess` but lifts the decision to
 /// operator configuration: the choice changes pipeline behavior (and
 /// cost), so a per-filter knob is the right granularity.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.policy.body_access")]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum BodyAccessMode {
     /// Body is buffered for inspection / routing; mutations are

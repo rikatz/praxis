@@ -91,7 +91,8 @@ fn strip_structural_keys(config: &serde_yaml::Value) -> serde_yaml::Value {
 /// [`parse_filter_config`]) and rejects unknown fields.
 ///
 /// [`parse_filter_config`]: crate::parse_filter_config
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.empty_filter_config")]
 #[serde(deny_unknown_fields)]
 #[expect(
     clippy::empty_structs_with_brackets,

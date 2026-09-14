@@ -19,10 +19,11 @@ use crate::{
 // Config
 // -----------------------------------------------------------------------------
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.ip_acl")]
 #[serde(deny_unknown_fields)]
 /// Deserialized YAML config for the IP ACL filter.
-struct IpAclConfig {
+pub(crate) struct IpAclConfig {
     /// IPs/CIDRs to allow. If non-empty, only these are permitted.
     #[serde(default)]
     allow: Vec<String>,

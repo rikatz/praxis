@@ -63,7 +63,8 @@ pub const MAX_BATCH_SIZE: usize = 10_000; // 100x the default
 /// [`Reject`]: BatchPolicy::Reject
 /// [`First`]: BatchPolicy::First
 /// [`max_batch_size`]: JsonRpcConfig::max_batch_size
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.json_rpc.batch_policy")]
 #[serde(rename_all = "snake_case")]
 pub enum BatchPolicy {
     /// Reject all JSON-RPC batch arrays with HTTP 400.
@@ -94,7 +95,8 @@ pub enum BatchPolicy {
 // -----------------------------------------------------------------------------
 
 /// Header configuration for JSON-RPC metadata promotion.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.json_rpc.headers")]
 #[serde(deny_unknown_fields)]
 pub struct JsonRpcHeaders {
     /// Header name for JSON-RPC id (e.g., `X-Json-Rpc-Id`).
@@ -124,7 +126,8 @@ impl Default for JsonRpcHeaders {
 /// YAML configuration for [`JsonRpcFilter`].
 ///
 /// [`JsonRpcFilter`]: super::JsonRpcFilter
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.payload_processing.json_rpc")]
 #[serde(deny_unknown_fields)]
 pub struct JsonRpcConfig {
     /// Batch handling policy (default: [`reject`]).

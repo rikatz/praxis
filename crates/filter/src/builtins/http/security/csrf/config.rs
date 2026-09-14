@@ -28,9 +28,10 @@ const DEFAULT_SAFE_METHODS: &[&str] = &["GET", "HEAD", "OPTIONS"];
 /// enforce_percentage: 100
 /// enable_sec_fetch_site: true
 /// ```
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.http.security.csrf")]
 #[serde(deny_unknown_fields)]
-pub(super) struct CsrfConfig {
+pub(crate) struct CsrfConfig {
     /// Whether to also validate the `Sec-Fetch-Site` header.
     #[serde(default)]
     pub enable_sec_fetch_site: bool,
