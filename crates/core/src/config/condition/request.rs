@@ -41,6 +41,107 @@ pub enum Condition {
 impl_condition_deserialize!(Condition, ConditionMatch, "condition");
 impl_condition_serialize!(Condition, ConditionMatch);
 
+impl praxis_config_catalog::ConfigSchemaFor for Condition {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.condition")
+    }
+
+    fn register(
+        _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        let when_fields = vec![
+            praxis_config_catalog::ObjectField {
+                serialized_name: "path".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::String),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "path_prefix".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::String),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "methods".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::array(praxis_config_catalog::SchemaNode::simple(
+                    praxis_config_catalog::SchemaKind::String,
+                )),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "headers".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::map(praxis_config_catalog::SchemaNode::simple(
+                    praxis_config_catalog::SchemaKind::String,
+                )),
+                required: false,
+                flattened: false,
+            },
+        ];
+
+        let when_obj = praxis_config_catalog::SchemaNode::object(when_fields);
+        let when_variant = praxis_config_catalog::SchemaNode::object(vec![praxis_config_catalog::ObjectField {
+            serialized_name: "when".to_owned(),
+            aliases: Vec::new(),
+            schema: when_obj,
+            required: true,
+            flattened: false,
+        }]);
+
+        let unless_fields = vec![
+            praxis_config_catalog::ObjectField {
+                serialized_name: "path".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::String),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "path_prefix".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::String),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "methods".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::array(praxis_config_catalog::SchemaNode::simple(
+                    praxis_config_catalog::SchemaKind::String,
+                )),
+                required: false,
+                flattened: false,
+            },
+            praxis_config_catalog::ObjectField {
+                serialized_name: "headers".to_owned(),
+                aliases: Vec::new(),
+                schema: praxis_config_catalog::SchemaNode::map(praxis_config_catalog::SchemaNode::simple(
+                    praxis_config_catalog::SchemaKind::String,
+                )),
+                required: false,
+                flattened: false,
+            },
+        ];
+
+        let unless_obj = praxis_config_catalog::SchemaNode::object(unless_fields);
+        let unless_variant = praxis_config_catalog::SchemaNode::object(vec![praxis_config_catalog::ObjectField {
+            serialized_name: "unless".to_owned(),
+            aliases: Vec::new(),
+            schema: unless_obj,
+            required: true,
+            flattened: false,
+        }]);
+
+        praxis_config_catalog::SchemaNode::one_of(vec![when_variant, unless_variant])
+    }
+}
+
 // -----------------------------------------------------------------------------
 // ConditionMatch
 // -----------------------------------------------------------------------------

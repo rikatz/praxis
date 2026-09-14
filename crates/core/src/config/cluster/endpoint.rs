@@ -26,7 +26,8 @@ use serde::{Deserialize, Serialize};
 ///     priority: 0
 ///     zone: "us-east-1a"
 /// ```
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.endpoint")]
 #[serde(untagged, try_from = "EndpointRaw")]
 pub enum Endpoint {
     /// Plain `host:port` string; weight is implicitly 1.

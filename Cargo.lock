@@ -3184,6 +3184,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "praxis-proxy-config-catalog"
+version = "0.5.4"
+dependencies = [
+ "praxis-proxy-config-catalog-derive",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "praxis-proxy-config-catalog-derive"
+version = "0.5.4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.4",
+]
+
+[[package]]
 name = "praxis-proxy-core"
 version = "0.5.4"
 dependencies = [
@@ -3198,6 +3216,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry_sdk",
  "percent-encoding",
+ "praxis-proxy-config-catalog",
  "praxis-proxy-tls",
  "quixotic-plecostomus-core",
  "quixotic-plecostomus-http",
@@ -3234,6 +3253,7 @@ dependencies = [
  "opentelemetry_sdk",
  "percent-encoding",
  "praxis-policy",
+ "praxis-proxy-config-catalog",
  "praxis-proxy-core",
  "praxis-proxy-tls",
  "proptest",
@@ -3291,6 +3311,7 @@ version = "0.5.4"
 dependencies = [
  "arc-swap",
  "notify",
+ "praxis-proxy-config-catalog",
  "proptest",
  "rcgen",
  "rustls",
@@ -5704,7 +5725,9 @@ dependencies = [
  "nix",
  "plotters",
  "praxis-proxy",
+ "praxis-proxy-config-catalog",
  "praxis-proxy-core",
+ "praxis-proxy-filter",
  "quote",
  "serde_json",
  "syn 3.0.5",

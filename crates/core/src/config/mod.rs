@@ -90,7 +90,8 @@ pub use validate::{
 /// .unwrap();
 /// assert_eq!(config.listeners[0].address, "127.0.0.1:8080");
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.root.config")]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     /// Admin endpoint settings (address and verbosity).

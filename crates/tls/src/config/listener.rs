@@ -34,7 +34,8 @@ use crate::TlsError;
 /// let tls: ListenerTls = serde_yaml::from_str(&yaml).unwrap();
 /// assert_eq!(tls.certificates.len(), 1);
 /// ```
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.listener")]
 pub struct ListenerTls {
     /// Server certificates. At least one required.
     ///
@@ -288,7 +289,10 @@ impl ListenerTls {
 /// let mode: ClientCertMode = serde_yaml::from_str("none").unwrap();
 /// assert!(matches!(mode, ClientCertMode::None));
 /// ```
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor,
+)]
+#[config_schema(id = "core.tls.client_cert_mode")]
 #[serde(rename_all = "snake_case")]
 pub enum ClientCertMode {
     /// Do not request a client certificate (default).
@@ -317,7 +321,8 @@ pub enum ClientCertMode {
 /// let v: TlsVersion = serde_yaml::from_str("tls12").unwrap();
 /// assert!(matches!(v, TlsVersion::Tls12));
 /// ```
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.version")]
 #[serde(rename_all = "snake_case")]
 pub enum TlsVersion {
     /// TLS 1.2 (allows both 1.2 and 1.3).

@@ -3,7 +3,9 @@
 
 //! Filter registry: maps filter type names to their factory functions.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
+
+use praxis_config_catalog::{ConfigSchema, ConfigSchemaFor, SchemaId, SchemaNode};
 
 use crate::{
     any_filter::AnyFilter,
@@ -48,6 +50,24 @@ struct FilterRegistration {
 
     /// Whether this filter is security-critical.
     security_class: SecurityClass,
+
+    /// Optional schema callback for catalog generation.
+    schema: Option<SchemaRegistration>,
+}
+
+type SchemaFn = fn(&mut BTreeMap<SchemaId, ConfigSchema>, &mut BTreeSet<SchemaId>) -> SchemaNode;
+
+#[derive(Clone, Copy)]
+struct SchemaRegistration {
+    id: fn() -> SchemaId,
+    register: SchemaFn,
+}
+
+fn schema_for<C: ConfigSchemaFor>(
+    schemas: &mut BTreeMap<SchemaId, ConfigSchema>,
+    visiting: &mut BTreeSet<SchemaId>,
+) -> SchemaNode {
+    C::register(schemas, visiting)
 }
 
 /// A normal public factory or a built-in factory that also needs
@@ -191,6 +211,7 @@ impl FilterRegistry {
             FilterRegistration {
                 factory: RegisteredFilterFactory::Standard(factory),
                 security_class,
+                schema: None,
             },
         );
         Ok(())
@@ -382,6 +403,20 @@ impl FilterRegistry {
         self.filters.keys().map(String::as_str).collect()
     }
 
+    /// Registers the schema for a filter when its configuration uses the
+    /// derive-backed catalog path.
+    pub fn register_schema(
+        &self,
+        name: &str,
+        schemas: &mut BTreeMap<SchemaId, ConfigSchema>,
+        visiting: &mut BTreeSet<SchemaId>,
+    ) -> Option<(SchemaId, SchemaNode)> {
+        let registration = self.filters.get(name)?.schema?;
+        let id = (registration.id)();
+        let node = (registration.register)(schemas, visiting);
+        Some((id, node))
+    }
+
     /// Returns `true` if the named filter has [`SecurityClass::Security`].
     ///
     /// Returns `false` for unknown filter names.
@@ -495,6 +530,7 @@ fn register_http_with_registry(
         FilterRegistration {
             factory: RegisteredFilterFactory::HttpWithRegistry(factory_fn),
             security_class: SecurityClass::Standard,
+            schema: None,
         },
     );
     debug_assert!(prev.is_none(), "duplicate built-in filter name: '{name}'");
@@ -541,6 +577,7 @@ fn insert_registration(
         FilterRegistration {
             factory: RegisteredFilterFactory::Standard(factory),
             security_class,
+            schema: None,
         },
     );
     debug_assert!(prev.is_none(), "duplicate built-in filter name: '{name}'");

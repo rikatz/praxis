@@ -52,7 +52,8 @@ use super::chain_ref::ChainRef;
 /// assert!(branch.on_result.is_some());
 /// assert_eq!(branch.rejoin, "terminal");
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.branch_chain")]
 #[serde(deny_unknown_fields)]
 pub struct BranchChainConfig {
     /// Globally unique name for this branch.
@@ -118,7 +119,8 @@ fn default_rejoin() -> String {
 /// assert_eq!(cond.key, "status");
 /// assert_eq!(cond.value, "hit");
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.branch_condition")]
 #[serde(deny_unknown_fields)]
 pub struct BranchCondition {
     /// Filter TYPE name whose results to inspect.

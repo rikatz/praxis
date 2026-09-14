@@ -28,7 +28,8 @@ use serde::{Deserialize, Serialize};
 /// let bad: Result<HealthCheckType, _> = serde_yaml::from_str("websocket");
 /// assert!(bad.is_err());
 /// ```
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.health_check_type")]
 #[serde(rename_all = "lowercase")]
 pub enum HealthCheckType {
     /// HTTP GET probe.
@@ -79,7 +80,8 @@ impl fmt::Display for HealthCheckType {
 /// assert_eq!(hc.passive_unhealthy_threshold, Some(5));
 /// assert_eq!(hc.passive_healthy_threshold, Some(3));
 /// ```
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.health_check")]
 #[serde(deny_unknown_fields)]
 pub struct HealthCheckConfig {
     /// Probe type: [`Http`], [`Tcp`], or [`Grpc`].

@@ -29,7 +29,8 @@ use serde::Deserialize;
 /// assert!(all.misaligned_clusters);
 /// ```
 #[expect(clippy::struct_excessive_bools, reason = "per-check skip flags")]
-#[derive(Clone, Debug, Default, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.skip_pipeline_checks")]
 #[serde(default, deny_unknown_fields)]
 pub struct SkipPipelineChecks {
     /// Skip check: security filters with request conditions (bypass risk).
@@ -144,7 +145,8 @@ impl SkipPipelineChecks {
 /// assert!(!opts.allow_unbounded_body);
 /// ```
 #[expect(clippy::struct_excessive_bools, reason = "security override flags")]
-#[derive(Clone, Debug, Default, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.insecure_options")]
 #[serde(default, deny_unknown_fields)]
 pub struct InsecureOptions {
     /// Allow security-critical filters to use `failure_mode: open`,

@@ -3,6 +3,8 @@
 
 //! Retry policy configuration for upstream clusters.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use serde::{Deserialize, Serialize};
 
 /// Serde default for [`RetryPolicy::configured`]: any deserialized policy is
@@ -174,7 +176,8 @@ impl TryFrom<f64> for BudgetPercent {
 /// let cond: RetriableCondition = serde_yaml::from_str("connect_failure").unwrap();
 /// assert!(matches!(cond, RetriableCondition::ConnectFailure));
 /// ```
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.retriable_condition")]
 #[serde(rename_all = "snake_case")]
 pub enum RetriableCondition {
     /// TCP/TLS connect failure before an HTTP response.
@@ -208,7 +211,8 @@ pub enum RetriableCondition {
 /// assert_eq!(cfg.base_interval_ms, 25);
 /// assert_eq!(cfg.max_interval_ms, 250);
 /// ```
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.backoff")]
 #[serde(deny_unknown_fields, try_from = "RawBackoffConfig")]
 pub struct BackoffConfig {
     /// Base delay in milliseconds for the first retry.
@@ -273,7 +277,8 @@ impl Default for BackoffConfig {
 /// assert!((cfg.percent.get() - 20.0).abs() < f64::EPSILON);
 /// assert_eq!(cfg.min_retries_per_second, 10);
 /// ```
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.retry_budget")]
 #[serde(deny_unknown_fields)]
 pub struct RetryBudgetConfig {
     /// Maximum retries as a percentage of active requests (0.0..=100.0).
@@ -326,7 +331,8 @@ impl Default for RetryBudgetConfig {
 /// assert_eq!(policy.retriable_status_codes.len(), 3);
 /// assert!(!policy.allow_non_idempotent());
 /// ```
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.retry_policy")]
 #[serde(deny_unknown_fields)]
 pub struct RetryPolicy {
     /// Maximum number of retry attempts after the initial try.
@@ -506,6 +512,82 @@ impl RetryPolicy {
 impl Default for RetryPolicy {
     fn default() -> Self {
         Self::legacy_default()
+    }
+}
+
+// Manual ConfigSchemaFor impls for constrained numeric types.
+// These cannot be derived because their runtime semantics (TryFrom with bounds)
+// must be represented in the schema.
+
+impl praxis_config_catalog::ConfigSchemaFor for HttpStatusCode {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.http_status_code")
+    }
+
+    fn register(
+        _schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        let mut node = praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Integer);
+        let mut params = BTreeMap::new();
+        params.insert("minimum".to_owned(), serde_json::json!(100));
+        params.insert("maximum".to_owned(), serde_json::json!(599));
+        node.rules.push(praxis_config_catalog::PortableRule {
+            code: "core.http_status_code.range".to_owned(),
+            target: "value".to_owned(),
+            kind: praxis_config_catalog::RuleKind::NumericBounds,
+            parameters: params,
+            message: "http status code must be in 100..=599".to_owned(),
+        });
+        node
+    }
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for RetryBodyLimit {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.retry_body_limit")
+    }
+
+    fn register(
+        _schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        let mut node = praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Integer);
+        let mut params = BTreeMap::new();
+        params.insert("minimum".to_owned(), serde_json::json!(0));
+        params.insert("maximum".to_owned(), serde_json::json!(65536));
+        node.rules.push(praxis_config_catalog::PortableRule {
+            code: "core.retry_body_limit.range".to_owned(),
+            target: "value".to_owned(),
+            kind: praxis_config_catalog::RuleKind::NumericBounds,
+            parameters: params,
+            message: "retry body limit must be <= 65536 (64 KiB)".to_owned(),
+        });
+        node
+    }
+}
+
+impl praxis_config_catalog::ConfigSchemaFor for BudgetPercent {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.budget_percent")
+    }
+
+    fn register(
+        _schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        let mut node = praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Number);
+        let mut params = BTreeMap::new();
+        params.insert("minimum".to_owned(), serde_json::json!(0.0));
+        params.insert("maximum".to_owned(), serde_json::json!(100.0));
+        node.rules.push(praxis_config_catalog::PortableRule {
+            code: "core.budget_percent.range".to_owned(),
+            target: "value".to_owned(),
+            kind: praxis_config_catalog::RuleKind::NumericBounds,
+            parameters: params,
+            message: "budget percent must be in 0.0..=100.0".to_owned(),
+        });
+        node
     }
 }
 

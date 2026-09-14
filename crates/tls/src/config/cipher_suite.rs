@@ -30,7 +30,8 @@ use serde::{Deserialize, Serialize};
 /// ```
 ///
 /// [`SupportedCipherSuite`]: rustls::SupportedCipherSuite
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.cipher_suite")]
 pub enum CipherSuiteId {
     // TLS 1.3 suites
     /// TLS 1.3 AES-128-GCM with SHA-256.

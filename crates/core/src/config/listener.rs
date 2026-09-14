@@ -33,7 +33,8 @@ use serde::Deserialize;
 /// assert_eq!(listener.address, "0.0.0.0:8080");
 /// assert!(listener.tls.is_none());
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.listener")]
 #[serde(deny_unknown_fields)]
 pub struct Listener {
     /// Unique name for this listener.
@@ -128,7 +129,10 @@ pub struct Listener {
 /// let kind: ProtocolKind = serde_yaml::from_str("http").unwrap();
 /// assert_eq!(kind, ProtocolKind::Http);
 /// ```
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, serde::Serialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, serde::Serialize, praxis_config_catalog::ConfigSchemaFor,
+)]
+#[config_schema(id = "core.protocol_kind")]
 #[serde(rename_all = "lowercase")]
 pub enum ProtocolKind {
     /// HTTP (default).

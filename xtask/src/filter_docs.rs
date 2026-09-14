@@ -113,24 +113,24 @@ fn collect_stale_doc_paths(root: &Path, docs_dir: &Path, all_filters: &[FilterEn
 // ---------------------------------------------------------------------------
 
 /// A filter with its location metadata for output path construction.
-struct FilterEntry {
+pub(crate) struct FilterEntry {
     /// Protocol name (`http` or `tcp`).
-    protocol: String,
+    pub(crate) protocol: String,
     /// Category slug (e.g. `traffic_management`).
-    category: String,
+    pub(crate) category: String,
     /// Cargo feature required for the filter to be registered.
-    required_feature: Option<String>,
+    pub(crate) required_feature: Option<String>,
     /// Extracted filter information.
-    filter: FilterInfo,
+    pub(crate) filter: FilterInfo,
 }
 
 /// Information extracted for one filter.
 #[derive(Clone)]
-struct FilterInfo {
+pub(crate) struct FilterInfo {
     /// Filter name as returned by `fn name()` (e.g. `"rate_limit"`).
-    name: String,
+    pub(crate) name: String,
     /// First paragraph of the filter struct doc comment.
-    description: String,
+    pub(crate) description: String,
     /// First paragraphs from same-name filter variants.
     extra_descriptions: Vec<String>,
     /// Additional notes extracted from config struct docs.
@@ -138,7 +138,7 @@ struct FilterInfo {
     /// Config fields in declaration order.
     fields: Vec<FieldInfo>,
     /// YAML configuration example from doc comments.
-    yaml_examples: Vec<String>,
+    pub(crate) yaml_examples: Vec<String>,
 }
 
 /// Information extracted for one config field.
@@ -198,7 +198,7 @@ struct ConfigStruct {
 }
 
 /// Parsed items accumulated from source files belonging to one filter module.
-struct ModuleItems {
+pub(crate) struct ModuleItems {
     /// Module-level doc comments from files in the filter scope.
     module_docs: Vec<String>,
     /// Local config structs found (with `Deserialize` + `deny_unknown_fields`).
@@ -322,7 +322,7 @@ impl FilterInfo {
 // ---------------------------------------------------------------------------
 
 /// Parse shared config types that built-in filters reference.
-fn parse_shared_config_items(root: &Path) -> ModuleItems {
+pub(crate) fn parse_shared_config_items(root: &Path) -> ModuleItems {
     let mut items = ModuleItems::new();
     for dir in &[root.join("crates/core/src/config"), root.join("crates/tls/src/config")] {
         for path in collect_rs_files(dir) {
@@ -343,7 +343,7 @@ fn parse_shared_config_items(root: &Path) -> ModuleItems {
 }
 
 /// Discover all filters across all protocols and categories.
-fn discover_all_filters(root: &Path, shared_items: &ModuleItems) -> Vec<FilterEntry> {
+pub(crate) fn discover_all_filters(root: &Path, shared_items: &ModuleItems) -> Vec<FilterEntry> {
     let builtins = root.join("crates/filter/src/builtins");
     let feature_requirements = discover_feature_requirements(root);
     let mut entries = Vec::new();

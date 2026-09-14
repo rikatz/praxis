@@ -20,6 +20,7 @@ workspace = true
 config-reload = ["dep:arc-swap", "dep:notify", "dep:tokio"]
 
 [dependencies]
+praxis-config-catalog = { workspace = true }
 arc-swap = { workspace = true, optional = true }
 notify = { workspace = true, optional = true }
 rustls = { workspace = true }

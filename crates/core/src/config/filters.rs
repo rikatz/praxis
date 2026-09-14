@@ -31,7 +31,10 @@ const KNOWN_FILTER_FIELDS: &[&str] = &[
 /// Per-filter failure behaviour.
 ///
 /// Controls what happens when a filter returns an error during execution.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, serde::Serialize)]
+#[derive(
+    Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, serde::Serialize, praxis_config_catalog::ConfigSchemaFor,
+)]
+#[config_schema(id = "core.failure_mode")]
 #[serde(rename_all = "lowercase")]
 pub enum FailureMode {
     /// The request is aborted on filter error (default, current behaviour).
@@ -40,6 +43,33 @@ pub enum FailureMode {
 
     /// The filter error is logged and the request continues to the next filter.
     Open,
+}
+
+// -----
+// FilterEntryConfig
+// -----
+
+/// Transparent wrapper for filter configuration values.
+#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[serde(transparent)]
+#[expect(
+    dead_code,
+    unreachable_pub,
+    reason = "compatibility wrapper retained while filter schemas migrate"
+)]
+pub struct FilterEntryConfig(pub serde_yaml::Value);
+
+impl praxis_config_catalog::ConfigSchemaFor for FilterEntryConfig {
+    fn schema_id() -> praxis_config_catalog::SchemaId {
+        praxis_config_catalog::SchemaId::from("core.filter.entry.config")
+    }
+
+    fn register(
+        _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+    ) -> praxis_config_catalog::SchemaNode {
+        praxis_config_catalog::SchemaNode::reference("core.filter.entry.config".to_owned())
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -63,7 +93,8 @@ pub enum FailureMode {
 /// assert_eq!(chain.name, "observability");
 /// assert_eq!(chain.filters.len(), 2);
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.chain")]
 #[serde(deny_unknown_fields)]
 pub struct FilterChainConfig {
     /// Unique name for this filter chain.
@@ -173,7 +204,8 @@ where
 /// assert!(entry.conditions.is_empty());
 /// assert!(entry.name.is_none());
 /// ```
-#[derive(Clone, Debug, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.filter.entry")]
 pub struct FilterEntry {
     /// Filter type name (e.g. `"router"`, `"load_balancer"`, or a custom name).
     #[serde(rename = "filter")]
@@ -216,6 +248,7 @@ pub struct FilterEntry {
     ///
     /// [`warn_config_typos`]: FilterEntry::warn_config_typos
     #[serde(flatten)]
+    #[config_schema(dynamic)]
     pub config: serde_yaml::Value,
 }
 

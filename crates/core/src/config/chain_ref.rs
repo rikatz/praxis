@@ -40,7 +40,8 @@ use super::filters::FilterEntry;
 /// .unwrap();
 /// assert!(matches!(inline, ChainRef::Inline { ref name, .. } if name == "inline_chain"));
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.chain_ref")]
 #[serde(untagged, try_from = "ChainRefRaw")]
 pub enum ChainRef {
     /// Inline chain definition.

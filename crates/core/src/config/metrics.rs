@@ -24,7 +24,8 @@ use serde::{Deserialize, Serialize};
 /// let metrics: MetricsConfig = serde_yaml::from_str("filter_duration: true").unwrap();
 /// assert!(metrics.filter_duration);
 /// ```
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.metrics")]
 #[serde(default, deny_unknown_fields)]
 pub struct MetricsConfig {
     /// Record per-filter hook duration histograms (`praxis_filter_duration_seconds`).
@@ -59,7 +60,8 @@ pub struct MetricsConfig {
 /// let label: MetricLabel = serde_yaml::from_str("status_class").unwrap();
 /// assert_eq!(label, MetricLabel::StatusClass);
 /// ```
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.metric_label")]
 #[serde(rename_all = "snake_case")]
 pub enum MetricLabel {
     /// The `cluster` label. Grows with configured clusters.
@@ -112,7 +114,8 @@ pub enum MetricLabel {
 /// assert!(labels.is_enabled(MetricLabel::Cluster));
 /// assert!(!labels.all_enabled());
 /// ```
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.metric_labels")]
 #[serde(default, deny_unknown_fields)]
 pub struct MetricLabelsConfig {
     /// Dimensions to drop from every metric that carries them.

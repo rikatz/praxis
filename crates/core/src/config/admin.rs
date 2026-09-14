@@ -32,7 +32,8 @@ use serde::Deserialize;
 /// assert_eq!(admin.address.as_deref(), Some("127.0.0.1:9901"));
 /// assert!(admin.verbose);
 /// ```
-#[derive(Clone, Debug, Default, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.admin")]
 #[serde(default, deny_unknown_fields)]
 pub struct AdminConfig {
     /// Admin endpoint bind address.

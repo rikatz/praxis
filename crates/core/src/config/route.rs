@@ -38,7 +38,8 @@ use super::RetryPolicy;
 ///
 /// [`Exact`]: PathMatch::Exact
 /// [`Prefix`]: PathMatch::Prefix
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.route")]
 #[serde(untagged)]
 pub enum PathMatch {
     /// Exact path match.

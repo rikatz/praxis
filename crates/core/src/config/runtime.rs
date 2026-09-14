@@ -35,7 +35,8 @@ use serde::Deserialize;
 /// assert_eq!(cfg.recovery_window_secs, 30);
 /// assert_eq!(cfg.half_open_timeout_secs, 30);
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.subrequest_circuit_breaker")]
 #[serde(deny_unknown_fields)]
 pub struct SubRequestCircuitBreakerConfig {
     /// Consecutive failure threshold before the circuit opens.
@@ -98,7 +99,8 @@ impl SubRequestCircuitBreakerConfig {
 /// assert_eq!(cfg.threads, 4);
 /// assert!(cfg.work_stealing);
 /// ```
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.runtime")]
 #[serde(deny_unknown_fields)]
 pub struct RuntimeConfig {
     /// Tokio scheduler global queue check interval, in ticks.

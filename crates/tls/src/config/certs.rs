@@ -31,7 +31,8 @@ use crate::TlsError;
 /// // Paths without traversal pass validation:
 /// assert!(pair.validate().is_ok());
 /// ```
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.cert_key_pair")]
 #[serde(deny_unknown_fields)]
 pub struct CertKeyPair {
     /// Path to the PEM certificate file.
@@ -93,7 +94,8 @@ impl CertKeyPair {
 /// assert_eq!(ca.ca_path, "/etc/ssl/ca.pem");
 /// assert!(ca.crl_paths.is_empty());
 /// ```
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.ca_config")]
 #[serde(deny_unknown_fields)]
 pub struct CaConfig {
     /// Path to the PEM CA certificate file.

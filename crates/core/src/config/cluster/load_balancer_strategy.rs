@@ -23,7 +23,8 @@ use serde::{Deserialize, Serialize};
 ///
 /// [`Simple`]: LoadBalancerStrategy::Simple
 /// [`Parameterised`]: LoadBalancerStrategy::Parameterised
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.load_balancer_strategy")]
 #[serde(untagged)]
 pub enum LoadBalancerStrategy {
     /// Plain-string strategies: `"round_robin"` or `"least_connections"`.
@@ -133,7 +134,8 @@ impl Default for LoadBalancerStrategy {
 }
 
 /// String-serialisable load-balancing strategies.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.simple_strategy")]
 #[serde(rename_all = "snake_case")]
 pub enum SimpleStrategy {
     /// Cycle through endpoints in order, respecting weights.
@@ -152,7 +154,8 @@ pub enum SimpleStrategy {
 }
 
 /// Load-balancing strategies that carry parameters.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.parameterised_strategy")]
 pub enum ParameterisedStrategy {
     /// Hash a request attribute to route requests to a stable endpoint.
     #[serde(rename = "consistent_hash")]
@@ -184,7 +187,8 @@ pub enum ParameterisedStrategy {
 }
 
 /// Options for the `consistent_hash` load-balancing strategy.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.consistent_hash_opts")]
 #[serde(deny_unknown_fields)]
 pub struct ConsistentHashOpts {
     /// Name of the request header to use as the hash key.
@@ -195,7 +199,8 @@ pub struct ConsistentHashOpts {
 }
 
 /// Options for the `maglev` load-balancing strategy.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.maglev_opts")]
 #[serde(deny_unknown_fields)]
 pub struct MaglevOpts {
     /// Name of the request header to use as the hash key.
@@ -210,7 +215,8 @@ pub struct MaglevOpts {
 // -----------------------------------------------------------------------------
 
 /// Options for the `ring_hash` load-balancing strategy.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.ring_hash_opts")]
 #[serde(deny_unknown_fields)]
 pub struct RingHashOpts {
     /// Hash function to use for the ring. Defaults to FNV-1a.
@@ -227,7 +233,8 @@ pub struct RingHashOpts {
 }
 
 /// Hash function choices for ring-hash and related strategies.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.hash_function")]
 #[serde(rename_all = "snake_case")]
 pub enum HashFunction {
     /// Fowler-Noll-Vo 1a (64-bit). Fast and deterministic.
@@ -251,7 +258,8 @@ fn default_virtual_nodes() -> u32 {
 // -----------------------------------------------------------------------------
 
 /// Options for the `subset` load-balancing strategy.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.subset_opts")]
 #[serde(deny_unknown_fields)]
 pub struct SubsetOpts {
     /// Behavior when no endpoints match the selector.
@@ -268,7 +276,8 @@ pub struct SubsetOpts {
 }
 
 /// What to do when no endpoints match the subset selector.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.subset_fallback")]
 #[serde(rename_all = "snake_case")]
 pub enum SubsetFallbackPolicy {
     /// Use all endpoints regardless of metadata.
@@ -284,7 +293,8 @@ pub enum SubsetFallbackPolicy {
 // -----------------------------------------------------------------------------
 
 /// Options for the `zone_aware` load-balancing strategy.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.zone_aware_opts")]
 #[serde(deny_unknown_fields)]
 pub struct ZoneAwareOpts {
     /// Strategy to apply within the selected zone group. Defaults to round-robin.
@@ -310,7 +320,8 @@ fn default_min_local_healthy_pct() -> u8 {
 // -----------------------------------------------------------------------------
 
 /// Options for the `priority` load-balancing strategy.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.priority_opts")]
 #[serde(deny_unknown_fields)]
 pub struct PriorityOpts {
     /// Strategy to apply within each priority tier. Defaults to round-robin.

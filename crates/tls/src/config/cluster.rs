@@ -28,7 +28,8 @@ use crate::TlsError;
 /// assert_eq!(tls.sni.as_deref(), Some("api.example.com"));
 /// assert!(tls.verify);
 /// ```
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.tls.cluster")]
 pub struct ClusterTls {
     /// Custom CA for verifying upstream certs.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -43,6 +44,7 @@ pub struct ClusterTls {
     pub sni: Option<String>,
 
     /// Verify upstream certificate. Default: `true`.
+    #[serde(default = "default_true")]
     pub verify: bool,
 }
 

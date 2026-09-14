@@ -53,7 +53,8 @@ pub(crate) const OTLP_PROTOCOL_ENV_VAR: &str = "OTEL_EXPORTER_OTLP_PROTOCOL";
 ///     Some("http://localhost:4317")
 /// );
 /// ```
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.telemetry")]
 #[serde(default, deny_unknown_fields)]
 pub struct TelemetryConfig {
     /// Batch export interval in seconds.

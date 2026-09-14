@@ -33,7 +33,8 @@ use crate::errors::ProxyError;
 ///
 /// These apply only when the cluster serves HTTP listeners; TCP load
 /// balancers do not process HTTP headers and ignore this block.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.cluster_http_options")]
 #[serde(deny_unknown_fields)]
 pub struct ClusterHttpOptions {
     /// Override the upstream HTTP `Host` header.
@@ -94,7 +95,8 @@ pub struct ClusterHttpOptions {
 /// assert!(cluster.read_timeout_ms.is_none());
 /// assert!(cluster.tls.is_none());
 /// ```
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, praxis_config_catalog::ConfigSchemaFor)]
+#[config_schema(id = "core.cluster")]
 #[serde(deny_unknown_fields)]
 pub struct Cluster {
     /// Unique name for the cluster.
