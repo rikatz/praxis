@@ -3,15 +3,15 @@
 
 //! Trait for types that can produce configuration schemas.
 //!
-//! # Trait naming: ConfigSchemaFor vs HasConfigSchema
+//! # Trait naming: `ConfigSchemaFor` vs `HasConfigSchema`
 //!
-//! Named ConfigSchemaFor to avoid collision with the existing ConfigSchema
+//! Named `ConfigSchemaFor` to avoid collision with the existing `ConfigSchema`
 //! struct in this crate (which represents a complete schema definition with id,
 //! title, node, etc.). The derive macro generates impls of this trait; consumers
 //! write one `use praxis_config_catalog::ConfigSchemaFor;` and then use
 //! `#[derive(ConfigSchemaFor)]` on their types.
 //!
-//! This is the same naming pattern used by Deserialize (trait) vs the struct
+//! This is the same naming pattern used by `Deserialize` (trait) vs the struct
 //! shapes it operates on.
 
 use std::collections::{BTreeMap, BTreeSet};

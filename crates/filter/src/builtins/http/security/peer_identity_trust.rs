@@ -128,11 +128,10 @@ fn decode_validated_hex(digest: &str) -> Vec<u8> {
     }
     digest
         .as_bytes()
-        .chunks_exact(2)
-        .map(|pair| match pair {
-            [hi, lo] => (nibble(*hi) << 4) | nibble(*lo),
-            _ => 0, // unreachable: chunks_exact(2) yields only pairs
-        })
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|[hi, lo]| (nibble(*hi) << 4) | nibble(*lo))
         .collect()
 }
 

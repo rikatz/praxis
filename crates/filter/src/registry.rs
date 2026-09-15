@@ -55,14 +55,19 @@ struct FilterRegistration {
     schema: Option<SchemaRegistration>,
 }
 
+/// Function pointer used to register one configuration schema.
 type SchemaFn = fn(&mut BTreeMap<SchemaId, ConfigSchema>, &mut BTreeSet<SchemaId>) -> SchemaNode;
 
+/// Typed schema metadata stored alongside a filter factory.
 #[derive(Clone, Copy)]
 struct SchemaRegistration {
+    /// Return the stable schema identifier.
     id: fn() -> SchemaId,
+    /// Register the schema and return its node.
     register: SchemaFn,
 }
 
+/// Register a typed configuration schema.
 fn schema_for<C: ConfigSchemaFor>(
     schemas: &mut BTreeMap<SchemaId, ConfigSchema>,
     visiting: &mut BTreeSet<SchemaId>,
@@ -554,6 +559,7 @@ fn register_http_builtins(filters: &mut HashMap<String, FilterRegistration>) {
     );
 }
 
+/// Register a standard HTTP filter and its typed schema.
 fn register_http<C: ConfigSchemaFor>(
     filters: &mut HashMap<String, FilterRegistration>,
     name: &str,
@@ -571,6 +577,7 @@ fn register_http<C: ConfigSchemaFor>(
     );
 }
 
+/// Register an HTTP filter that resolves nested filters through the registry.
 fn register_http_with_registry<C: ConfigSchemaFor>(
     filters: &mut HashMap<String, FilterRegistration>,
     name: &str,
@@ -590,6 +597,7 @@ fn register_http_with_registry<C: ConfigSchemaFor>(
     debug_assert!(prev.is_none(), "duplicate built-in filter name: '{name}'");
 }
 
+/// Register a security HTTP filter and its typed schema.
 fn register_http_security<C: ConfigSchemaFor>(
     filters: &mut HashMap<String, FilterRegistration>,
     name: &str,

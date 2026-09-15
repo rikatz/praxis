@@ -101,12 +101,16 @@ impl praxis_config_catalog::ConfigSchemaFor for OperationConfig {
         praxis_config_catalog::SchemaId::from("core.url_rewrite.operation")
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "rewrite operation schema mirrors the wire configuration"
+    )]
     fn register(
-        _schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
-        _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
+        schemas: &mut BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
+        visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,
     ) -> praxis_config_catalog::SchemaNode {
         use praxis_config_catalog::{ObjectField, SchemaNode};
-        let mut string = || <String as praxis_config_catalog::ConfigSchemaFor>::register(_schemas, _visiting);
+        let mut string = || <String as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting);
         let regex_replace = SchemaNode::object(vec![
             ObjectField {
                 serialized_name: "pattern".into(),

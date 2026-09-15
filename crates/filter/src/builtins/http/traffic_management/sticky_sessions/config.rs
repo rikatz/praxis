@@ -190,7 +190,7 @@ impl praxis_config_catalog::ConfigSchemaFor for MaxEntries {
         let mut node = praxis_config_catalog::SchemaNode::simple(praxis_config_catalog::SchemaKind::Integer);
         let mut params = std::collections::BTreeMap::new();
         params.insert("minimum".to_owned(), serde_json::json!(1));
-        params.insert("maximum".to_owned(), serde_json::json!(200000));
+        params.insert("maximum".to_owned(), serde_json::json!(200_000));
         node.rules.push(praxis_config_catalog::PortableRule {
             code: "core.max_entries.range".to_owned(),
             target: "value".to_owned(),

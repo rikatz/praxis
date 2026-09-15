@@ -3,7 +3,7 @@
 
 //! Manual trait impls for standard library and common types.
 //!
-//! These types do not derive ConfigSchemaFor and instead provide hand-written
+//! These types do not derive `ConfigSchemaFor` and instead provide hand-written
 //! impls that reflect their runtime semantics (e.g., constrained numeric
 //! ranges, custom deserializers).
 
@@ -17,6 +17,7 @@ use crate::{ConfigSchema, ConfigSchemaFor, SchemaId, SchemaKind, SchemaNode};
 
 // Primitive types
 
+/// Implement `ConfigSchemaFor` for scalar types.
 macro_rules! scalar_schema {
     ($($ty:ty => ($id:literal, $kind:expr)),+ $(,)?) => {$ (
         impl ConfigSchemaFor for $ty {

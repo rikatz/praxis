@@ -504,6 +504,10 @@ impl CatalogFragment {
     }
 
     /// Validate descriptor identity and references.
+    #[expect(
+        clippy::too_many_lines,
+        reason = "validation keeps all descriptor invariants together"
+    )]
     fn validate_descriptors(&self) -> Result<(), ValidationError> {
         let mut names = BTreeSet::new();
         let mut sources = BTreeSet::new();

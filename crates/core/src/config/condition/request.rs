@@ -46,6 +46,10 @@ impl praxis_config_catalog::ConfigSchemaFor for Condition {
         praxis_config_catalog::SchemaId::from("core.condition")
     }
 
+    #[expect(
+        clippy::too_many_lines,
+        reason = "condition schema mirrors the wire variants explicitly"
+    )]
     fn register(
         _schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
         _visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,

@@ -74,6 +74,7 @@ impl praxis_config_catalog::ConfigSchemaFor for ClusterCredentialConfig {
         praxis_config_catalog::SchemaId::from("core.credential_injection.cluster")
     }
 
+    #[expect(clippy::too_many_lines, reason = "credential schema mirrors the wire configuration")]
     fn register(
         schemas: &mut std::collections::BTreeMap<praxis_config_catalog::SchemaId, praxis_config_catalog::ConfigSchema>,
         visiting: &mut std::collections::BTreeSet<praxis_config_catalog::SchemaId>,

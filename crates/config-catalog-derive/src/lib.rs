@@ -6,7 +6,9 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as Tokens;
 use quote::quote;
-use syn::{Attribute, Data, DataEnum, DataStruct, DeriveInput, Fields, LitStr, Type, parse::Parse, parse_macro_input};
+use syn::{
+    Attribute, Data, DataEnum, DataStruct, DeriveInput, Fields, LitStr, Type, parse::Parse as _, parse_macro_input,
+};
 
 /// Derive a recursive configuration schema from a serde-shaped struct or enum.
 #[proc_macro_derive(ConfigSchemaFor, attributes(config_schema, serde))]
@@ -15,6 +17,11 @@ pub fn derive_config_schema_for(input: TokenStream) -> TokenStream {
     expand(&input).unwrap_or_else(syn::Error::into_compile_error).into()
 }
 
+/// Expand a parsed derive input into the generated schema implementation.
+#[expect(
+    clippy::too_many_lines,
+    reason = "the generated implementation has one linear registration path"
+)]
 fn expand(input: &DeriveInput) -> syn::Result<Tokens> {
     let id = schema_id(&input.attrs)?;
     let name = &input.ident;
@@ -64,25 +71,37 @@ fn expand(input: &DeriveInput) -> syn::Result<Tokens> {
     })
 }
 
+/// Build the schema expression for a struct or newtype.
+#[expect(clippy::too_many_lines, reason = "field metadata is emitted in one linear pass")]
 fn struct_body(data: &DataStruct, rename_all: Option<&str>) -> syn::Result<Tokens> {
     let Fields::Named(fields) = &data.fields else {
         return match &data.fields {
             Fields::Unit => Ok(quote! { praxis_config_catalog::SchemaNode::object(Vec::new()) }),
-            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
-                let ty = &fields.unnamed[0].ty;
+            Fields::Unnamed(fields) => {
+                let mut unnamed = fields.unnamed.iter();
+                let Some(field) = unnamed.next() else {
+                    return Err(syn::Error::new_spanned(
+                        &data.fields,
+                        "ConfigSchemaFor requires named fields or a single-field newtype",
+                    ));
+                };
+                if unnamed.next().is_some() {
+                    return Err(syn::Error::new_spanned(
+                        &data.fields,
+                        "ConfigSchemaFor requires named fields or a single-field newtype",
+                    ));
+                }
+                let ty = &field.ty;
                 Ok(quote! { <#ty as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting) })
             },
-            _ => Err(syn::Error::new_spanned(
-                &data.fields,
-                "ConfigSchemaFor requires named fields or a single-field newtype",
-            )),
+            Fields::Named(_) => unreachable!("named fields are handled above"),
         };
     };
     let fields = fields.named.iter().filter_map(|field| {
         if has_flag(&field.attrs, "skip") || has_flag(&field.attrs, "skip_deserializing") {
             return None;
         }
-        let ident = field.ident.as_ref().expect("named field");
+        let ident = field.ident.as_ref()?;
         let ty = &field.ty;
         let name = serialized_name(&field.attrs, &ident.to_string(), rename_all);
         let aliases = aliases(&field.attrs);
@@ -110,6 +129,8 @@ fn struct_body(data: &DataStruct, rename_all: Option<&str>) -> syn::Result<Token
     })
 }
 
+/// Build the schema expression for an enum.
+#[expect(clippy::too_many_lines, reason = "each serde enum representation is explicit")]
 fn enum_body(data: &DataEnum, rename_all: Option<&str>, tag: Option<&str>) -> syn::Result<Tokens> {
     let mut unit_values = Vec::new();
     let mut variants = Vec::new();
@@ -135,17 +156,17 @@ fn enum_body(data: &DataEnum, rename_all: Option<&str>, tag: Option<&str>) -> sy
             },
             Fields::Named(fields) => {
                 let field_tokens = fields.named.iter().filter_map(|field| {
-                    let ident = field.ident.as_ref().expect("named field");
+                    let ident = field.ident.as_ref()?;
                     if has_flag(&field.attrs, "skip") || has_flag(&field.attrs, "skip_deserializing") {
                         return None;
                     }
                     let ty = &field.ty;
-                    let name = serialized_name(&field.attrs, &ident.to_string(), None);
+                    let field_name = serialized_name(&field.attrs, &ident.to_string(), None);
                     let aliases = aliases(&field.attrs);
                     let required = !has_default(&field.attrs) && !is_option(ty);
                     Some(quote! {
                         variant_fields.push(praxis_config_catalog::ObjectField {
-                            serialized_name: #name.to_owned(),
+                            serialized_name: #field_name.to_owned(),
                             aliases: vec![#(#aliases.to_owned()),*],
                             schema: <#ty as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting),
                             required: #required,
@@ -169,26 +190,31 @@ fn enum_body(data: &DataEnum, rename_all: Option<&str>, tag: Option<&str>) -> sy
                     variants.push(praxis_config_catalog::SchemaNode::object(variant_fields));
                 });
             },
-            Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
-                let ty = &fields.unnamed[0].ty;
+            Fields::Unnamed(fields) => {
+                let mut unnamed = fields.unnamed.iter();
+                let Some(field) = unnamed.next() else {
+                    return Err(syn::Error::new_spanned(
+                        &variant.fields,
+                        "tuple enum variants must contain one field",
+                    ));
+                };
+                if unnamed.next().is_some() {
+                    return Err(syn::Error::new_spanned(
+                        &variant.fields,
+                        "tuple enum variants must contain one field",
+                    ));
+                }
+                let ty = &field.ty;
                 variants.push(quote! {
                     variants.push(<#ty as praxis_config_catalog::ConfigSchemaFor>::register(schemas, visiting));
                 });
-            },
-            Fields::Unnamed(_) => {
-                return Err(syn::Error::new_spanned(
-                    &variant.fields,
-                    "tuple enum variants must contain one field",
-                ));
             },
         }
     }
     if variants.is_empty() {
         Ok(quote! { praxis_config_catalog::SchemaNode::enum_strings(vec![#(#unit_values.to_owned()),*]) })
     } else {
-        let discriminator = tag
-            .map(|tag| quote! { Some(#tag.to_owned()) })
-            .unwrap_or_else(|| quote! { None });
+        let discriminator = tag.map_or_else(|| quote! { None }, |tag| quote! { Some(#tag.to_owned()) });
         Ok(quote! {
             let mut variants = Vec::new();
             #(#variants)*
@@ -197,8 +223,9 @@ fn enum_body(data: &DataEnum, rename_all: Option<&str>, tag: Option<&str>) -> sy
     }
 }
 
+/// Read the schema identifier from the derive attributes.
 fn schema_id(attrs: &[Attribute]) -> syn::Result<String> {
-    for attr in attrs.iter().filter(|attr| attr.path().is_ident("config_schema")) {
+    if let Some(attr) = attrs.iter().find(|attr| attr.path().is_ident("config_schema")) {
         let value: LitStr = attr.parse_args_with(|input: syn::parse::ParseStream<'_>| {
             let key: syn::Ident = input.parse()?;
             if key != "id" {
@@ -215,65 +242,61 @@ fn schema_id(attrs: &[Attribute]) -> syn::Result<String> {
     ))
 }
 
+/// Parse the comma-separated metadata inside a serde attribute.
 fn serde_items(attr: &Attribute) -> syn::Result<syn::punctuated::Punctuated<syn::Meta, syn::Token![,]>> {
     attr.parse_args_with(|input: syn::parse::ParseStream<'_>| input.parse_terminated(syn::Meta::parse, syn::Token![,]))
 }
 
+/// Resolve a serialized field or variant name.
 fn serialized_name(attrs: &[Attribute], fallback: &str, rename_all: Option<&str>) -> String {
     attrs
         .iter()
         .filter(|attr| attr.path().is_ident("serde"))
         .find_map(|attr| {
-            serde_items(attr).ok()?.into_iter().find_map(|item| match item {
-                syn::Meta::NameValue(value) if value.path.is_ident("rename") => match value.value {
-                    syn::Expr::Lit(expr) => match expr.lit {
-                        syn::Lit::Str(value) => Some(value.value()),
-                        _ => None,
-                    },
-                    _ => None,
-                },
-                _ => None,
+            serde_items(attr).ok()?.into_iter().find_map(|item| {
+                let syn::Meta::NameValue(value) = item else { return None };
+                value
+                    .path
+                    .is_ident("rename")
+                    .then(|| literal_string(&value.value))
+                    .flatten()
             })
         })
         .unwrap_or_else(|| rename_all.map_or_else(|| fallback.to_owned(), |rule| apply_rename(fallback, rule)))
 }
 
+/// Resolve serde's `rename_all` rule.
 fn serde_rename_all(attrs: &[Attribute]) -> Option<String> {
-    attrs
-        .iter()
-        .filter(|attr| attr.path().is_ident("serde"))
-        .find_map(|attr| {
-            serde_items(attr).ok()?.into_iter().find_map(|item| match item {
-                syn::Meta::NameValue(value) if value.path.is_ident("rename_all") => match value.value {
-                    syn::Expr::Lit(expr) => match expr.lit {
-                        syn::Lit::Str(value) => Some(value.value()),
-                        _ => None,
-                    },
-                    _ => None,
-                },
-                _ => None,
-            })
-        })
+    serde_value(attrs, "rename_all")
 }
 
+/// Resolve serde's enum tag name.
 fn serde_tag(attrs: &[Attribute]) -> Option<String> {
+    serde_value(attrs, "tag")
+}
+
+/// Resolve a string-valued serde metadata item.
+fn serde_value(attrs: &[Attribute], key: &str) -> Option<String> {
     attrs
         .iter()
         .filter(|attr| attr.path().is_ident("serde"))
         .find_map(|attr| {
-            serde_items(attr).ok()?.into_iter().find_map(|item| match item {
-                syn::Meta::NameValue(value) if value.path.is_ident("tag") => match value.value {
-                    syn::Expr::Lit(expr) => match expr.lit {
-                        syn::Lit::Str(value) => Some(value.value()),
-                        _ => None,
-                    },
-                    _ => None,
-                },
-                _ => None,
+            serde_items(attr).ok()?.into_iter().find_map(|item| {
+                let syn::Meta::NameValue(value) = item else { return None };
+                value.path.is_ident(key).then(|| literal_string(&value.value)).flatten()
             })
         })
 }
 
+/// Extract a string literal from a syn expression.
+fn literal_string(expr: &syn::Expr) -> Option<String> {
+    let syn::Expr::Lit(expr) = expr else { return None };
+    let syn::Lit::Str(value) = &expr.lit else { return None };
+    Some(value.value())
+}
+
+/// Apply a serde rename rule to a Rust identifier.
+#[expect(clippy::too_many_lines, reason = "rename-rule parsing is intentionally explicit")]
 fn apply_rename(name: &str, rule: &str) -> String {
     let mut words = Vec::new();
     let mut word = String::new();
@@ -292,24 +315,29 @@ fn apply_rename(name: &str, rule: &str) -> String {
     if !word.is_empty() {
         words.push(word);
     }
-    let capitalized = |word: &str| {
-        let mut chars = word.chars();
-        chars.next().map_or_else(String::new, |first| {
-            first.to_ascii_uppercase().to_string() + chars.as_str()
-        })
+    let capitalized = |value: &String| {
+        let mut chars = value.chars();
+        let Some(first) = chars.next() else {
+            return String::new();
+        };
+        let mut result = first.to_ascii_uppercase().to_string();
+        result.extend(chars);
+        result
     };
     match rule {
         "camelCase" => {
-            words.first().cloned().unwrap_or_default()
-                + &words.iter().skip(1).map(|word| capitalized(word)).collect::<String>()
+            let mut result = words.first().cloned().unwrap_or_default();
+            result.extend(words.iter().skip(1).map(capitalized));
+            result
         },
-        "PascalCase" => words.iter().map(|word| capitalized(word)).collect(),
+        "PascalCase" => words.iter().map(capitalized).collect(),
         "kebab-case" => words.join("-"),
         "SCREAMING_SNAKE_CASE" => words.join("_").to_ascii_uppercase(),
         _ => words.join("_"),
     }
 }
 
+/// Collect all serde aliases from a field or variant.
 fn aliases(attrs: &[Attribute]) -> Vec<String> {
     attrs
         .iter()
@@ -318,15 +346,13 @@ fn aliases(attrs: &[Attribute]) -> Vec<String> {
             serde_items(attr).ok().map(|items| {
                 items
                     .into_iter()
-                    .filter_map(|item| match item {
-                        syn::Meta::NameValue(value) if value.path.is_ident("alias") => match value.value {
-                            syn::Expr::Lit(expr) => match expr.lit {
-                                syn::Lit::Str(value) => Some(value.value()),
-                                _ => None,
-                            },
-                            _ => None,
-                        },
-                        _ => None,
+                    .filter_map(|item| {
+                        let syn::Meta::NameValue(value) = item else { return None };
+                        value
+                            .path
+                            .is_ident("alias")
+                            .then(|| literal_string(&value.value))
+                            .flatten()
                     })
                     .collect::<Vec<_>>()
             })
@@ -335,18 +361,18 @@ fn aliases(attrs: &[Attribute]) -> Vec<String> {
         .collect()
 }
 
+/// Test whether a serde flag is present.
 fn has_flag(attrs: &[Attribute], flag: &str) -> bool {
     attrs.iter().filter(|attr| attr.path().is_ident("serde")).any(|attr| {
-        serde_items(attr)
-            .map(|items| {
-                items
-                    .into_iter()
-                    .any(|item| matches!(item, syn::Meta::Path(path) if path.is_ident(flag)))
-            })
-            .unwrap_or(false)
+        serde_items(attr).is_ok_and(|items| {
+            items
+                .into_iter()
+                .any(|item| matches!(item, syn::Meta::Path(path) if path.is_ident(flag)))
+        })
     })
 }
 
+/// Test whether a catalog-specific flag is present.
 fn has_config_flag(attrs: &[Attribute], flag: &str) -> bool {
     attrs
         .iter()
@@ -362,6 +388,7 @@ fn has_config_flag(attrs: &[Attribute], flag: &str) -> bool {
         })
 }
 
+/// Test whether serde supplies a default value.
 fn has_default(attrs: &[Attribute]) -> bool {
     attrs.iter().filter(|attr| attr.path().is_ident("serde")).any(|attr| {
         serde_items(attr).is_ok_and(|items| {
@@ -374,6 +401,7 @@ fn has_default(attrs: &[Attribute]) -> bool {
     })
 }
 
+/// Test whether a type is an `Option`.
 fn is_option(ty: &Type) -> bool {
     let Type::Path(path) = ty else { return false };
     path.path
@@ -382,6 +410,7 @@ fn is_option(ty: &Type) -> bool {
         .is_some_and(|segment| segment.ident == "Option")
 }
 
+/// Collect Rust doc comments from attributes.
 fn docs(attrs: &[Attribute]) -> String {
     attrs
         .iter()
