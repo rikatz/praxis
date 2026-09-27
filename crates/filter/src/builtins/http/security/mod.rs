@@ -19,6 +19,7 @@ pub(crate) mod origin_normalize;
 mod peer_identity_trust;
 #[cfg(feature = "policy-engine")]
 mod policy;
+mod system_one_decision;
 
 #[cfg(feature = "basic-auth-filter")]
 pub use basic_auth::BasicAuthFilter;
@@ -32,3 +33,4 @@ pub use ip_acl::IpAclFilter;
 pub use peer_identity_trust::PeerIdentityTrustFilter;
 #[cfg(feature = "policy-engine")]
 pub use policy::{PolicyFilter, PolicyPluginFactoryFn, register_policy_plugin_factory};
+pub use system_one_decision::SystemOneDecisionFilter;

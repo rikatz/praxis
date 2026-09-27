@@ -27,7 +27,7 @@ pub use security::BasicAuthFilter;
 pub use security::PeerIdentityTrustFilter;
 pub use security::{
     ContainsValue, CorsFilter, CredentialInjectionFilter, CsrfFilter, DisallowedOriginMode, ForwardedHeadersFilter,
-    GuardrailsAction, GuardrailsFilter, IpAclFilter, PiiKind, RuleTargetKind,
+    GuardrailsAction, GuardrailsFilter, IpAclFilter, PiiKind, RuleTargetKind, SystemOneDecisionFilter,
 };
 #[cfg(feature = "policy-engine")]
 pub use security::{PolicyFilter, PolicyPluginFactoryFn, register_policy_plugin_factory};

@@ -21,8 +21,8 @@ pub use http::{
     HeaderFilter, IpAclFilter, JsonBodyFieldFilter, JsonBodyFilter, JsonBodyOps, JsonRpcFilter, LoadBalancerFilter,
     PathRewriteFilter, PiiKind, RateLimitFilter, RateLimitMode, RedirectFilter, RedirectStatus, RequestIdFilter,
     RouterFilter, RuleTargetKind, SessionStore, SessionStoreRegistry, StaticResponseFilter, StickySessionsFilter,
-    TimeoutFilter, TraceContextFilter, UrlRewriteFilter, access_record_already_emitted, bodyless_response,
-    emit_access_record, encode_trailer_frame, has_dot_dot_traversal, mark_access_record_emitted,
+    SystemOneDecisionFilter, TimeoutFilter, TraceContextFilter, UrlRewriteFilter, access_record_already_emitted,
+    bodyless_response, emit_access_record, encode_trailer_frame, has_dot_dot_traversal, mark_access_record_emitted,
     normalize_rewritten_path,
 };
 #[cfg(feature = "policy-engine")]

@@ -1,0 +1,57 @@
+# System One decision with hosted Jev
+#
+# Queries one static Jev question with the request method, path, client IP, and
+# complete post-sanitization header map. The answer is stored and debug-logged;
+# this MVP example does not block or route requests.
+#
+# Every post-sanitization header, including Authorization and Cookie, is sent
+# to the configured decision endpoint inside JSON state. Set TYPESAFE_API_KEY
+# in the environment before starting Praxis.
+#
+# Usage:
+#   RUST_LOG=system_one_decision.filter=debug cargo run -p praxis-proxy -- \
+#     -c examples/configs/security/system-one-jev.yaml
+#
+# Exercise:
+#   curl -i -H 'X-Demo-Request: example' http://127.0.0.1:8080/demo
+
+listeners:
+  - name: default
+    address: "127.0.0.1:8080"
+    filter_chains:
+      - main
+
+filter_chains:
+  - name: main
+    filters:
+      - filter: system_one_decision
+        endpoint: https://api.typesafe.ai/v1/systemone
+        model: jev-1.13.0
+        api_key_env: TYPESAFE_API_KEY
+        state:
+          headers: { from: request.headers }
+          method: { from: request.method }
+          path: { from: request.path }
+          client_ip: { from: client.ip }
+          purpose: "Classify this request for automated abuse."
+        questions:
+          automated_abuse:
+            type: noul
+            instructions: "Is this request malicious or an attempt of exploitation?"
+            criteria:
+              "true": "The request is an attempt of a web exploitation."
+              "false": "The request appears to be valid and safe."
+
+      - filter: router
+        routes:
+          - path_prefix: "/"
+            cluster: backend
+
+      - filter: load_balancer
+        clusters:
+          - name: backend
+            endpoints:
+              - "127.0.0.1:3000"
+
+insecure_options:
+  allow_private_endpoints: true # example proxies to a local backend

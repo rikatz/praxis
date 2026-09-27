@@ -80,6 +80,7 @@ ppe = { workspace = true, optional = true }
 parking_lot = { workspace = true }
 dashmap = { workspace = true }
 http = { workspace = true }
+jev = { workspace = true }
 metrics = { workspace = true }
 opentelemetry = { workspace = true, optional = true }
 percent-encoding = { workspace = true }

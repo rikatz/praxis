@@ -315,6 +315,7 @@ impl<'a> ChainBindingContext<'a> {
             self.branch_budget,
             self.outbound_depth,
         )?;
+        FilterPipeline::validate_system_one_decision_cardinality(&filters)?;
         Ok(FilterPipeline::from_filters(filters))
     }
 
@@ -365,6 +366,7 @@ impl<'a> ChainBindingContext<'a> {
             self.branch_budget,
             self.outbound_depth + 1,
         )?;
+        FilterPipeline::validate_system_one_decision_cardinality(&filters)?;
         let pipeline = FilterPipeline::from_filters(filters);
         Self::reject_non_http_filters(&pipeline, name)?;
         Self::reject_terminal_filters(&pipeline, name)?;

@@ -160,6 +160,7 @@ See [Quickstart](../docs/quickstart.md#quick-test-servers) for full options.
 | [policy-http.yaml](configs/security/policy-http.yaml) | Generic-HTTP authorization for non-MCP traffic using the Praxis Policy Engine |
 | [policy-llm.yaml](configs/security/policy-llm.yaml) | Authorizes body-addressed inference requests against `llm:` policy routes |
 | [policy.yaml](configs/security/policy.yaml) | Embeds the Praxis Policy Engine in-process to enforce multi-source identity, APL route policy, RFC 8693 OAuth 2.0 token exchange, field redaction, session taint, audit emission, and (under `body_access: read_write`) request / response body rewriting |
+| [system-one-jev.yaml](configs/security/system-one-jev.yaml) | Queries hosted Jev using request data and logs its validated answer without enforcing it |
 
 ### Traffic Management
 

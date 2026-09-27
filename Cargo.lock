@@ -2074,6 +2074,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
+name = "jev"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "010196f98633094f9408cf2e10323185b3adb2ec91cc5f582d1b2cdea5e18eff"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "jiff"
 version = "0.2.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3402,6 +3414,7 @@ dependencies = [
  "chrono",
  "dashmap",
  "http",
+ "jev",
  "jsonwebtoken",
  "metrics",
  "metrics-exporter-prometheus",
@@ -4246,7 +4259,9 @@ checksum = "16a1cfa75cc186dd73d5818e510e042e40927bccc9c236b061cea97e1eb08029"
 dependencies = [
  "base64 0.23.1",
  "bytes",
+ "futures-channel",
  "futures-core",
+ "futures-util",
  "http",
  "http-body",
  "http-body-util",
@@ -4256,6 +4271,8 @@ dependencies = [
  "log",
  "percent-encoding",
  "pin-project-lite",
+ "serde",
+ "serde_json",
  "sync_wrapper",
  "tokio",
  "tower",

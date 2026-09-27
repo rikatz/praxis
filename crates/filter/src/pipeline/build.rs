@@ -67,6 +67,7 @@ impl FilterPipeline {
             pf.name = entry.name.as_ref().map(|n| Arc::from(n.as_str()));
             filters.push(pf);
         }
+        Self::validate_system_one_decision_cardinality(&filters)?;
         Ok(Self::from_filters(filters))
     }
 
@@ -101,6 +102,7 @@ impl FilterPipeline {
         insecure_options: &InsecureOptions,
     ) -> Result<Self, FilterError> {
         let filters = super::build_branch::resolve_chain_filters(entries, registry, chains, 0, insecure_options)?;
+        Self::validate_system_one_decision_cardinality(&filters)?;
         Ok(Self::from_filters(filters))
     }
 

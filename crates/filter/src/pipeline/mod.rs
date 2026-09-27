@@ -188,6 +188,31 @@ pub struct FilterPipeline {
     reason = "pipeline concerns are split across modules"
 )]
 impl FilterPipeline {
+    /// Reject more than one System One decision filter in the resolved pipeline,
+    /// including filters nested in branch chains.
+    pub(crate) fn validate_system_one_decision_cardinality(
+        filters: &[PipelineFilter],
+    ) -> Result<(), FilterError> {
+        fn count(filters: &[PipelineFilter]) -> usize {
+            filters
+                .iter()
+                .map(|filter| {
+                    let own = if filter.filter.name() == "system_one_decision" { 1 } else { 0 };
+                    own + filter.branches.iter().map(|branch| count(&branch.filters)).sum::<usize>()
+                })
+                .sum()
+        }
+
+        let count = count(filters);
+        if count > 1 {
+            return Err(format!(
+                "system_one_decision may appear only once per pipeline; found {count} instances"
+            )
+            .into());
+        }
+        Ok(())
+    }
+
     /// Apply global body size ceilings.
     ///
     /// When no filter requires body access (mode is [`Stream`]),

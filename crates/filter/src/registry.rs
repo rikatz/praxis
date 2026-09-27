@@ -524,6 +524,7 @@ fn register_http_builtins(filters: &mut HashMap<String, FilterRegistration>) {
     register_http(filters, "router", crate::RouterFilter::from_config);
     register_http(filters, "static_response", StaticResponseFilter::from_config);
     register_http(filters, "sticky_sessions", crate::StickySessionsFilter::from_config);
+    register_http_security(filters, "system_one_decision", crate::SystemOneDecisionFilter::from_config);
     register_http(filters, "timeout", TimeoutFilter::from_config);
     register_http(filters, "trace_context", TraceContextFilter::from_config);
     register_http(filters, "url_rewrite", UrlRewriteFilter::from_config);
