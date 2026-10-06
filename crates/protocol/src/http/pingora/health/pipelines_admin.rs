@@ -3,8 +3,6 @@
 
 //! `GET /api/pipelines` admin handler.
 
-use std::sync::Arc;
-
 use http::Response;
 use praxis_filter::FilterIntrospection;
 use serde::Serialize;
@@ -32,20 +30,6 @@ pub(super) struct PipelinesAggregateResponse {
 pub(super) struct PipelinesSingleResponse {
     /// Requested listener view.
     pub listener: ListenerPipelineView,
-}
-
-// -----------------------------------------------------------------------------
-// PipelinesAdminState
-// -----------------------------------------------------------------------------
-
-/// Pipelines + metadata handles for the admin service.
-#[derive(Clone)]
-pub(super) struct PipelinesAdminState {
-    /// Live per-listener pipelines.
-    pub pipelines: Arc<ListenerPipelines>,
-
-    /// Hot-swappable listener metadata.
-    pub meta: ListenerMetaStore,
 }
 
 // -----------------------------------------------------------------------------

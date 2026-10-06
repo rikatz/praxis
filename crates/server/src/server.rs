@@ -34,7 +34,7 @@ pub use crate::startup_checks::check_root_privilege;
 #[cfg(test)]
 use crate::startup_checks::insecure_warn;
 #[cfg(not(feature = "admin-api"))]
-use crate::startup_checks::warn_admin_configured_without_feature;
+use crate::startup_checks::warn_admin_api_configured_without_feature;
 #[cfg(feature = "experimental")]
 use crate::startup_checks::warn_experimental_features;
 #[cfg(not(feature = "policy-engine"))]
@@ -155,7 +155,7 @@ fn run_startup_security_checks(config: &Config) -> Result<(), StartupError> {
     #[cfg(feature = "experimental")]
     warn_experimental_features();
     #[cfg(not(feature = "admin-api"))]
-    warn_admin_configured_without_feature(config);
+    warn_admin_api_configured_without_feature(config);
     enforce_root_check(config)?;
     warn_insecure_options(config);
     init_runtime_limits(&config.runtime);
@@ -304,16 +304,16 @@ pub fn try_run_server_with_composition(
     #[cfg(feature = "admin-api")]
     let stats_started_at = std::time::Instant::now();
 
-    // Install before startup instrumentation emits metrics. `/api/stats` reads
-    // this recorder even when only the admin API listener is configured.
+    // Install before startup instrumentation emits metrics. `/metrics` and
+    // `/api/stats` share this recorder when their listeners are configured.
     // Label selection is installed first and never changed: a gauge guard
     // acquired before a change and released after it would increment one
     // series and decrement another, stranding both.
     praxis_protocol::http::pingora::metrics::install_metric_labels(config.metrics.labels.clone());
 
-    #[cfg(feature = "admin-api")]
-    let prometheus_recorder = (config.admin.address.is_some() || config.admin.metrics_address.is_some())
-        .then(praxis_protocol::http::pingora::health::install_prometheus_admin_recorder);
+    let prometheus_recorder = (config.admin.metrics_address.is_some()
+        || (cfg!(feature = "admin-api") && config.admin.address.is_some()))
+    .then(praxis_protocol::http::pingora::health::install_prometheus_admin_recorder);
 
     let health_registry = build_health_registry(&config.clusters);
     let (state, registry) = build_server_state(&config, composition, &health_registry, log_level)?;
@@ -321,13 +321,13 @@ pub fn try_run_server_with_composition(
     info!("initializing server");
     let mut server = PingoraServerRuntime::new(&config);
     let _cert_shutdowns = register_protocols(&mut server, &config, &state.pipelines)?;
-    #[cfg(feature = "admin-api")]
-    register_admin_endpoints(
+    register_management_endpoints(
         &mut server,
         &config,
         health_registry,
         &state,
         prometheus_recorder,
+        #[cfg(feature = "admin-api")]
         stats_started_at,
     );
 
@@ -664,21 +664,24 @@ fn watcher_params(
 // Admin
 // -----------------------------------------------------------------------------
 
-/// Register admin/health endpoints with the Pingora server.
-#[cfg(feature = "admin-api")]
-#[expect(
-    clippy::too_many_arguments,
-    reason = "admin wiring needs registry, meta stores, and metrics"
+/// Register the optional Admin API and health/metrics endpoints.
+#[cfg_attr(
+    feature = "admin-api",
+    expect(
+        clippy::too_many_arguments,
+        reason = "management listeners share health state and recorder upkeep"
+    )
 )]
 #[expect(clippy::too_many_lines, reason = "registering the independent management services")]
-fn register_admin_endpoints(
+fn register_management_endpoints(
     server: &mut PingoraServerRuntime,
     config: &Config,
     health_registry: HealthRegistry,
     state: &ServerState,
     prometheus_recorder: Option<praxis_protocol::http::pingora::health::PrometheusAdminRecorder>,
-    stats_started_at: std::time::Instant,
+    #[cfg(feature = "admin-api")] stats_started_at: std::time::Instant,
 ) {
+    #[cfg(feature = "admin-api")]
     if let Some(admin_addr) = &config.admin.address {
         praxis_protocol::http::pingora::health::add_admin_api_to_pingora_server(
             server.server_mut(),

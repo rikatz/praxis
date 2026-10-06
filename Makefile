@@ -678,6 +678,8 @@ test-integration: ## schema, security, resilience and integration suites
 		-p praxis-tests-resilience \
 		-p praxis-tests-integration \
 		$(_NOCAPTURE)
+	cargo build -p praxis-proxy --bin praxis --no-default-features --features config-reload,policy-engine
+	PRAXIS_BIN="$(abspath $(if $(CARGO_TARGET_DIR),$(CARGO_TARGET_DIR),target))/debug/praxis" cargo test --all-features -p praxis-tests-integration --test suite health_and_metrics_run_without_admin_api -- --ignored
 
 # Compile the benchmark harness without running it, to catch bench
 # build breakage. Split out of test-integration so PR CI skips it;

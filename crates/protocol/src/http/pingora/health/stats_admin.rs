@@ -3,16 +3,19 @@
 
 //! `GET /api/stats` admin handler (#125 Phase 1).
 
-use std::{collections::BTreeMap, sync::Arc, time::Instant};
+#[cfg(test)]
+use std::sync::Arc;
+use std::{collections::BTreeMap, time::Instant};
 
 use http::Response;
 use praxis_core::{config::ProtocolKind, health::HealthRegistry};
 use serde::Serialize;
 
+#[cfg(test)]
+use super::readiness::{self, PipelineReadinessState};
 use super::{
     cluster_meta::{ClusterMeta, ClusterMetaStore},
     listener_meta::{ListenerMeta, ListenerMetaStore},
-    pipelines_admin,
 };
 use crate::http::pingora::{json::json_response, metrics};
 
@@ -120,34 +123,6 @@ struct EndpointStatsView {
 // -----------------------------------------------------------------------------
 // Dispatch
 // -----------------------------------------------------------------------------
-
-/// Prefer the health registry pinned by live pipelines for **current** listeners
-/// (post-reload) over the startup snapshot held on the admin service.
-pub(super) fn resolve_health_registry(
-    admin_registry: Option<&HealthRegistry>,
-    pipelines: Option<&pipelines_admin::PipelinesAdminState>,
-    listener_meta: &ListenerMetaStore,
-) -> Option<HealthRegistry> {
-    let Some(state) = pipelines else {
-        return admin_registry.cloned();
-    };
-    let meta = listener_meta.load();
-    let current_listeners: std::collections::HashSet<String> = meta.keys().cloned().collect();
-    for name in state.pipelines.listener_names() {
-        if !current_listeners.contains(name) {
-            continue;
-        }
-        let Some(slot) = state.pipelines.get(name) else {
-            continue;
-        };
-        if let Some(registry) = slot.load().health_registry() {
-            return Some(Arc::clone(registry));
-        }
-    }
-    // No live pipeline exposes a registry (e.g. health checks removed on reload).
-    // Do not fall back to the startup admin snapshot — it would report stale probe state.
-    None
-}
 
 /// Handle `GET`/`HEAD` `/api/stats`.
 pub(super) fn stats_response(
@@ -473,16 +448,16 @@ filter_chains:
 
         let empty_meta = new_listener_meta_store(std::collections::HashMap::new());
         assert!(
-            resolve_health_registry(Some(&startup), None, &empty_meta).is_some(),
+            readiness::resolve_health_registry(Some(&startup), None, &empty_meta).is_some(),
             "with no live pipelines the startup registry is used"
         );
 
-        let state = pipelines_admin::PipelinesAdminState {
+        let state = PipelineReadinessState {
             pipelines: Arc::new(crate::ListenerPipelines::new(std::collections::HashMap::new())),
             meta: new_listener_meta_store(std::collections::HashMap::new()),
         };
         assert!(
-            resolve_health_registry(Some(&startup), Some(&state), &state.meta).is_none(),
+            readiness::resolve_health_registry(Some(&startup), Some(&state), &state.meta).is_none(),
             "must not fall back to the stale startup registry when pipelines are live"
         );
     }
@@ -490,7 +465,7 @@ filter_chains:
     #[test]
     fn resolve_health_registry_returns_none_when_no_admin_registry() {
         let empty_meta = new_listener_meta_store(std::collections::HashMap::new());
-        let result = resolve_health_registry(None, None, &empty_meta);
+        let result = readiness::resolve_health_registry(None, None, &empty_meta);
         assert!(result.is_none(), "should return None when no admin registry");
     }
 

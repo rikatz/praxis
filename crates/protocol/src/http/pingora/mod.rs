@@ -30,7 +30,6 @@ pub(crate) mod grpc_trailers;
 pub mod handler;
 /// Health check infrastructure: admin endpoints, probes, and background runner.
 pub mod health;
-#[cfg(feature = "admin-api")]
 pub(crate) mod json;
 /// Admin endpoints for runtime key-value store CRUD.
 #[cfg(feature = "admin-api")]

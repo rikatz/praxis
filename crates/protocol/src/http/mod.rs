@@ -6,6 +6,4 @@
 /// Pingora-backed HTTP implementation.
 pub mod pingora;
 
-#[cfg(feature = "admin-api")]
-pub use pingora::health::PingoraHealthService;
-pub use pingora::{PingoraHttp, handler::load_http_handler};
+pub use pingora::{PingoraHttp, handler::load_http_handler, health::PingoraHealthService};

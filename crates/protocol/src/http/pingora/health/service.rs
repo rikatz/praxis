@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2024 Praxis Contributors
 
-//! Admin health-check HTTP service.
+//! Health/metrics service and optional Admin API HTTP service.
 
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-};
+use std::sync::Arc;
+#[cfg(feature = "admin-api")]
+use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
 
 use async_trait::async_trait;
 use http::Response;
@@ -19,12 +18,24 @@ use pingora_core::{
         listening::Service,
     },
 };
-use praxis_core::{health::HealthRegistry, kv::KvStoreRegistry};
+use praxis_core::health::HealthRegistry;
+#[cfg(feature = "admin-api")]
+use praxis_core::kv::KvStoreRegistry;
 use tokio::time::Duration;
-use tracing::{error, info, warn};
+#[cfg(feature = "admin-api")]
+use tracing::warn;
+use tracing::{error, info};
 
-use super::{admin_host, listener_meta::ListenerMetaStore, log_level_admin, pipelines_admin, stats_admin};
-use crate::http::pingora::{json::json_response, kv::dispatch_kv_request, metrics};
+use super::{
+    admin_host,
+    listener_meta::ListenerMetaStore,
+    readiness::{self, PipelineReadinessState},
+};
+#[cfg(feature = "admin-api")]
+use super::{log_level_admin, pipelines_admin, stats_admin};
+#[cfg(feature = "admin-api")]
+use crate::http::pingora::kv::dispatch_kv_request;
+use crate::http::pingora::{json::json_response, metrics};
 
 /// Recorder upkeep runs independently of Prometheus scrape traffic.
 const PROMETHEUS_UPKEEP_INTERVAL: Duration = Duration::from_secs(5);
@@ -95,7 +106,7 @@ pub struct PingoraHealthService {
     registry: Option<HealthRegistry>,
 
     /// Live pipelines + metadata used to resolve `/ready` after reloads.
-    pipelines: Option<pipelines_admin::PipelinesAdminState>,
+    pipelines: Option<PipelineReadinessState>,
 
     /// When `true`, include per-cluster detail in `/ready` responses.
     verbose: bool,
@@ -127,7 +138,7 @@ impl PingoraHealthService {
 
     /// Resolve readiness against current pipelines after a config reload.
     fn with_live_pipelines(mut self, pipelines: Arc<crate::ListenerPipelines>, meta: ListenerMetaStore) -> Self {
-        self.pipelines = Some(pipelines_admin::PipelinesAdminState { pipelines, meta });
+        self.pipelines = Some(PipelineReadinessState { pipelines, meta });
         self
     }
 
@@ -163,7 +174,7 @@ impl PingoraHealthService {
         // /ready reflects current endpoint health after a config reload
         // instead of health frozen at the first reload.
         let registry = match self.pipelines.as_ref() {
-            Some(state) => stats_admin::resolve_health_registry(self.registry.as_ref(), Some(state), &state.meta),
+            Some(state) => readiness::resolve_health_registry(self.registry.as_ref(), Some(state), &state.meta),
             None => self.registry.clone(),
         };
         compute_ready_response(registry.as_ref(), self.verbose)
@@ -240,6 +251,7 @@ pub fn add_health_endpoint_to_pingora_server_with_pipelines(
 // -----------------------------------------------------------------------------
 
 /// Optional state for the `/api/*` admin endpoints.
+#[cfg(feature = "admin-api")]
 #[derive(Default)]
 pub struct AdminEndpointOptions {
     /// Shared health registry used by `/api/stats`.
@@ -264,6 +276,7 @@ pub struct AdminEndpointOptions {
 /// Admin API service that routes `/api/*` endpoints through a Pingora [`Service`].
 ///
 /// [`Service`]: pingora_core::services::listening::Service
+#[cfg(feature = "admin-api")]
 pub struct PingoraAdminService {
     /// Shared health registry for per-cluster status reporting.
     health_registry: Option<HealthRegistry>,
@@ -272,7 +285,7 @@ pub struct PingoraAdminService {
     kv_registry: Option<KvStoreRegistry>,
 
     /// Optional live pipelines + metadata for `GET /api/pipelines`.
-    pipelines: Option<pipelines_admin::PipelinesAdminState>,
+    pipelines: Option<PipelineReadinessState>,
 
     /// Optional runtime log-level state for `/api/log-level`.
     log_level: Option<Arc<praxis_core::logging::LogLevelState>>,
@@ -287,6 +300,7 @@ pub struct PingoraAdminService {
     legacy_probe_warning_logged: AtomicBool,
 }
 
+#[cfg(feature = "admin-api")]
 impl PingoraAdminService {
     /// Create an admin API service.
     ///
@@ -304,7 +318,7 @@ impl PingoraAdminService {
         Self {
             health_registry,
             kv_registry,
-            pipelines: pipelines.map(|(pipelines, meta)| pipelines_admin::PipelinesAdminState { pipelines, meta }),
+            pipelines: pipelines.map(|(pipelines, meta)| PipelineReadinessState { pipelines, meta }),
             log_level,
             require_loopback_host: false,
             stats,
@@ -356,7 +370,7 @@ impl PingoraAdminService {
         if path == "/api/stats" {
             return Some(match &self.stats {
                 Some(state) => {
-                    let registry = stats_admin::resolve_health_registry(
+                    let registry = readiness::resolve_health_registry(
                         self.health_registry.as_ref(),
                         self.pipelines.as_ref(),
                         &state.listener_meta,
@@ -373,10 +387,11 @@ impl PingoraAdminService {
     /// Emit one migration warning if an old health or metrics path hits this listener.
     fn should_warn_for_legacy_probe(&self, path: &str) -> bool {
         matches!(path, "/healthy" | "/ready" | "/metrics")
-            && !self.legacy_probe_warning_logged.swap(true, Ordering::Relaxed)
+            && !self.legacy_probe_warning_logged.swap(true, AtomicOrdering::Relaxed)
     }
 }
 
+#[cfg(feature = "admin-api")]
 #[async_trait]
 impl ServeHttp for PingoraAdminService {
     async fn response(&self, http_session: &mut ServerSession) -> Response<Vec<u8>> {
@@ -413,11 +428,13 @@ impl ServeHttp for PingoraAdminService {
 ///
 /// When `admin_addr` is loopback, requests with a non-loopback `Host` are
 /// rejected. Register recorder upkeep separately if `/api/stats` is enabled.
+#[cfg(feature = "admin-api")]
 pub fn add_admin_api_to_pingora_server(server: &mut Server, admin_addr: &str, options: AdminEndpointOptions) {
     bind_admin_api_to_pingora_server(server, admin_addr, options);
 }
 
 /// Construct and register the API service without changing recorder lifecycle.
+#[cfg(feature = "admin-api")]
 fn bind_admin_api_to_pingora_server(server: &mut Server, admin_addr: &str, options: AdminEndpointOptions) {
     let verbose = options.verbose;
     let require_loopback_host = admin_host::is_loopback_host(admin_addr);
@@ -660,7 +677,10 @@ fn prometheus_response() -> Response<Vec<u8>> {
 #[expect(clippy::allow_attributes, reason = "blanket test suppressions")]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::indexing_slicing, reason = "tests")]
 mod tests {
-    use std::{collections::HashMap, sync::atomic::AtomicUsize};
+    use std::{
+        collections::HashMap,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
 
     use praxis_core::health::{ClusterHealthEntry, EndpointHealth};
     use tokio::sync::Notify;
@@ -984,6 +1004,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[tokio::test]
     async fn loopback_bound_admin_rejects_rebound_host_on_every_route() {
         let (svc, _registry) = kv_admin(true);
@@ -1013,6 +1034,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "admin-api")]
     #[tokio::test]
     async fn loopback_bound_admin_rejects_rebound_kv_mutations() {
         let (svc, registry) = kv_admin(true);
@@ -1034,6 +1056,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[tokio::test]
     async fn loopback_bound_admin_serves_loopback_hosts() {
         let (svc, registry) = kv_admin(true);
@@ -1064,6 +1087,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[tokio::test]
     async fn loopback_bound_admin_serves_http10_request_without_host() {
         let (svc, _registry) = kv_admin(true);
@@ -1094,6 +1118,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[tokio::test]
     async fn admin_without_loopback_requirement_serves_any_host() {
         let (svc, registry) = kv_admin(false);
@@ -1110,6 +1135,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[test]
     fn admin_host_check_is_off_by_default() {
         let svc = PingoraAdminService::new(None, None, None, None, None, false);
@@ -1119,6 +1145,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "admin-api")]
     #[test]
     fn legacy_probe_warning_is_once_per_admin_service() {
         for path in ["/healthy", "/ready", "/metrics"] {
@@ -1142,6 +1169,7 @@ mod tests {
     // -------------------------------------------------------------------------
 
     /// Build an admin service with a `test` KV store holding `color=blue`.
+    #[cfg(feature = "admin-api")]
     fn kv_admin(require_loopback_host: bool) -> (PingoraAdminService, KvStoreRegistry) {
         let registry = KvStoreRegistry::new();
         registry.get_or_create("test").set("color", Arc::from("blue"));

@@ -19,9 +19,10 @@ default = []
 # Off by default at the library level; the `praxis-proxy` binary turns it
 # on via its own default so lean builds (--no-default-features) can drop it.
 config-reload = ["praxis-tls/config-reload"]
-# Admin and health/metrics HTTP surfaces. Off => those endpoints are not compiled in
-# (the proxy data path and background health checks are unaffected). Library
-# default is off; the `praxis-proxy` binary and the test harness turn it on.
+# Admin API HTTP surface. Off => `/api/*` endpoints are not compiled in.
+# Health and metrics endpoints are always compiled; listener configuration
+# controls whether they bind. Library default is off; the `praxis-proxy`
+# binary and the test harness enable the Admin API.
 admin-api = []
 # Logical upstream binding in the filter crate this crate embeds. Off by
 # default; forwarded so this crate's own tests can exercise the bound access
